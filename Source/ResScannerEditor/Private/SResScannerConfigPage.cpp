@@ -179,16 +179,33 @@ void SResScannerConfigPage::ResetConfig()
 
 void SResScannerConfigPage::DoScanWork()const
 {
-	UResScannerProxy* ScannerProxy = NewObject<UResScannerProxy>();
-	ScannerProxy->Init();
-	ScannerProxy->SetScannerConfig(*ScannerConfig);
-	ScannerProxy->DoScan();
-	const FMatchedResult& Result = ScannerProxy->GetScanResult();
-	FString OutString;
-	TemplateHelper::TSerializeStructAsJsonString(Result,OutString);
-	ContentsWidget->SetContent(OutString);
-	ContentsWidget->SetExpanded(true);
-	ContentsWidget->SetVisibility(EVisibility::Visible);
+	if(!ScannerConfig->bStandaloneMode)
+	{
+		UResScannerProxy* ScannerProxy = NewObject<UResScannerProxy>();
+		ScannerProxy->Init();
+		ScannerProxy->SetScannerConfig(*ScannerConfig);
+		ScannerProxy->DoScan();
+		const FMatchedResult& Result = ScannerProxy->GetScanResult();
+		FString OutString;
+		TemplateHelper::TSerializeStructAsJsonString(Result,OutString);
+		ContentsWidget->SetContent(OutString);
+		ContentsWidget->SetExpanded(true);
+		ContentsWidget->SetVisibility(EVisibility::Visible);
+	}
+	else
+	{
+		ContentsWidget->SetContent(TEXT(""));
+		ContentsWidget->SetExpanded(false);
+		ContentsWidget->SetVisibility(EVisibility::Hidden);
+		
+		FString CurrentConfig;
+		TemplateHelper::TSerializeStructAsJsonString(*ScannerConfig,CurrentConfig);
+		FString SaveConfigTo = FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectSavedDir(),TEXT("ResScanner"),TEXT("ScannerConfig.json")));
+		FFileHelper::SaveStringToFile(CurrentConfig,*SaveConfigTo);
+		FString MissionCommand = FString::Printf(TEXT("\"%s\" -run=ResScanner -config=\"%s\" %s"),*UFlibResScannerEditorHelper::GetProjectFilePath(),*SaveConfigTo,*ScannerConfig->AdditionalExecCommand);
+		UE_LOG(LogTemp,Log,TEXT("ResScanner %s Mission: %s %s"),*ScannerConfig->ConfigName,*UFlibResScannerEditorHelper::GetUECmdBinary(),*MissionCommand);
+		FResScannerEditorModule::Get().RunProcMission(UFlibResScannerEditorHelper::GetUECmdBinary(),MissionCommand,TEXT("ResScanner"));
+	}
 }
 
 void SResScannerConfigPage::CreateExportFilterListView()

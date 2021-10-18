@@ -40,7 +40,7 @@ void UResScannerProxy::DoScan()
 			UE_LOG(LogResScannerProxy,Warning,TEXT("rule %s is missed!"),*ScannerRule.RuleName);
 			continue;
 		}
-		if(!ScannerRule.ScanFilters.Num())
+		if(!ScannerRule.ScanFilters.Num() && !ScannerConfig->bByGlobalScanFilters)
 		{
 			UE_LOG(LogResScannerProxy,Warning,TEXT("rule %s not contain any filters!"),*ScannerRule.RuleName);
 			continue;
@@ -111,7 +111,7 @@ void UResScannerProxy::DoScan()
 			UFlibAssetParseHelper::CreateSaveFileNotify(Msg,SavePath,SNotificationItem::CS_Success);
 		}
 	}
-	if(GetScannerConfig()->bSaveResult)
+	if(GetScannerConfig()->bSaveResult && MatchedResult.MatchedAssets.Num())
 	{
 		FString SerializedJsonStr;
 		TemplateHelper::TSerializeStructAsJsonString(MatchedResult,SerializedJsonStr);
@@ -119,7 +119,14 @@ void UResScannerProxy::DoScan()
 		if(FFileHelper::SaveStringToFile(SerializedJsonStr, *SavePath) && !IsRunningCommandlet())
 		{
 			FText Msg = LOCTEXT("SavedScanResultMag", "Successd to Export the scan result.");
-			UFlibAssetParseHelper::CreateSaveFileNotify(Msg,SavePath,SNotificationItem::CS_Success);
+			if(::IsRunningCommandlet())
+			{
+				UE_LOG(LogResScannerProxy,Log,TEXT("%s"),*SerializedJsonStr);	
+			}
+			else
+			{
+				UFlibAssetParseHelper::CreateSaveFileNotify(Msg,SavePath,SNotificationItem::CS_Success);
+			}
 		}
 	}
 }

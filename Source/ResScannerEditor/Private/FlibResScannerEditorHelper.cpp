@@ -6,6 +6,7 @@
 #include "IDesktopPlatform.h"
 #include "Widgets/Notifications/SNotificationList.h"
 #include "Framework/Notifications/NotificationManager.h"
+#include "Kismet/KismetSystemLibrary.h"
 #define LOCTEXT_NAMESPACE "UFlibResScannerEditorHelper"
 
 TArray<FString> UFlibResScannerEditorHelper::OpenFileDialog()
@@ -47,6 +48,63 @@ TArray<FString> UFlibResScannerEditorHelper::SaveFileDialog()
 		);
 	}
 	return SaveFilenames;
+}
+
+
+FString UFlibResScannerEditorHelper::GetUECmdBinary()
+{
+	FString Binary;
+#if ENGINE_MAJOR_VERSION > 4
+	Binary = TEXT("UnrealEditor");
+#else
+	Binary = TEXT("UE4Editor");
+#endif
+
+	
+#if PLATFORM_WINDOWS
+	return FPaths::Combine(
+		FPaths::ConvertRelativePathToFull(FPaths::EngineDir()),
+		TEXT("Binaries"),
+#if PLATFORM_64BITS	
+		TEXT("Win64"),
+#else
+		TEXT("Win32"),
+#endif
+#ifdef WITH_HOTPATCHER_DEBUGGAME
+	#if PLATFORM_64BITS
+			FString::Printf(TEXT("%s-Win64-DebugGame-Cmd.exe"),*Binary)
+			// TEXT("UE4Editor-Win64-DebugGame-Cmd.exe")
+	#else
+			FString::Printf(TEXT("%s-Win32-DebugGame-Cmd.exe"),*Binary)
+			// TEXT("UE4Editor-Win32-DebugGame-Cmd.exe")
+	#endif
+#else
+		FString::Printf(TEXT("%s-Cmd.exe"),*Binary)
+		// TEXT("UE4Editor-Cmd.exe")
+#endif
+	);
+#endif
+#if PLATFORM_MAC
+	return FPaths::Combine(
+		FPaths::ConvertRelativePathToFull(FPaths::EngineDir()),
+		TEXT("Binaries"),
+		TEXT("Mac"),
+		FString::Printf(TEXT("%s-Cmd"),*Binary)
+		//TEXT("UE4Editor-Cmd")
+	);
+#endif
+	return TEXT("");
+}
+
+FString UFlibResScannerEditorHelper::GetProjectFilePath()
+{
+	FString ProjectFilePath;
+	{
+		FString ProjectPath = UKismetSystemLibrary::GetProjectDirectory();
+		FString ProjectName = FString(FApp::GetProjectName()).Append(TEXT(".uproject"));
+		ProjectFilePath =  FPaths::Combine(ProjectPath, ProjectName);
+	}
+	return ProjectFilePath;
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -129,13 +129,6 @@ struct FPropertyMatchRule
 {
 	GENERATED_USTRUCT_BODY()
 public:
-	// 匹配规则，是必须的还是可选的，Necessary是必须匹配所有的规则，Optional则只需要匹配规则中的一个
-	// UPROPERTY(EditAnywhere,BlueprintReadWrite)
-	// EMatchLogic MatchLogic;
-	// // UPROPERTY(EditAnywhere,BlueprintReadWrite,meta=(EditCondition="MatchLogic == EMatchLogic::Optional"))
-	// int32 OptionalRuleMatchNum = 1;
-	// UPROPERTY(EditAnywhere,BlueprintReadWrite)
-	// TArray<FPropertyMatchMapping> Rules;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 	TArray<FPropertyRule> Rules;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
@@ -153,6 +146,14 @@ public:
 	TArray<FSoftObjectPath> Assets;
 };
 
+// 规则的优先级程度
+UENUM(BlueprintType)
+enum class ERulePriority:uint8
+{
+	IMPORTENT,
+	GENERAL,
+	LOW
+};
 
 USTRUCT(BlueprintType)
 struct FRuleMatchedInfo
@@ -165,6 +166,9 @@ public:
 	FString RuleName;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 	FString RuleDescribe;
+	// 规则的重要程度（优先级）
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	ERulePriority Priority = ERulePriority::GENERAL;
 	// 该规则在配置数组中的下标
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 	int32 RuleID;
@@ -212,6 +216,9 @@ public:
 	// 是否启用当前规则
 	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category = "Filter")
 	bool bEnableRule = true;
+	// 规则的重要程度（优先级）
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	ERulePriority Priority = ERulePriority::GENERAL;
 	// 扫描资源路径
 	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category = "Filter",meta = (RelativeToGameContentDir, LongPackageName))
 	TArray<FDirectoryPath> ScanFilters;
@@ -276,6 +283,11 @@ public:
 	
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 	FDirectoryPath SavePath;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	bool bStandaloneMode = true;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	FString AdditionalExecCommand;
+	
 };
 
 USTRUCT(BlueprintType)

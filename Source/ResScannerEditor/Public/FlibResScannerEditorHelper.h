@@ -17,4 +17,6 @@ class RESSCANNEREDITOR_API UFlibResScannerEditorHelper : public UBlueprintFuncti
 public:
 	static	TArray<FString> OpenFileDialog();
 	static TArray<FString> SaveFileDialog();
+	static FString GetUECmdBinary();
+	static FString GetProjectFilePath();
 };

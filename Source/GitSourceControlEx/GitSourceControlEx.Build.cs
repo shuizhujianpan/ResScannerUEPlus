@@ -1,10 +1,10 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright 1998-2019 Epic Games, Inc. All Rights Reserved.
 
 using UnrealBuildTool;
 
-public class ResScannerEditor : ModuleRules
+public class GitSourceControlEx : ModuleRules
 {
-	public ResScannerEditor(ReadOnlyTargetRules Target) : base(Target)
+	public GitSourceControlEx(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		
@@ -26,12 +26,6 @@ public class ResScannerEditor : ModuleRules
 			new string[]
 			{
 				"Core",
-				"ResScanner",
-				"Json",
-				"JsonUtilities",
-				"Projects",
-				"DesktopPlatform",
-				"GitSourceControlEx"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -44,9 +38,6 @@ public class ResScannerEditor : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
-				"UnrealEd",
-				"EditorStyle",
-				"InputCore"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
@@ -58,5 +49,8 @@ public class ResScannerEditor : ModuleRules
 				// ... add any modules that your module loads dynamically here ...
 			}
 			);
+
+        OptimizeCode = CodeOptimization.InShippingBuildsOnly;
+
 	}
 }

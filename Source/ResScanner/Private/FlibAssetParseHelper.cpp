@@ -288,7 +288,11 @@ bool PathMatchOperator::Match(const FAssetData& AssetData,const FScannerMatchRul
 bool PropertyMatchOperator::Match(const FAssetData& AssetData,const FScannerMatchRule& Rule)
 {
 	bool bIsMatched = true;
-	UObject* Asset = AssetData.GetAsset();
+	UObject* Asset = NULL;
+	if(!!Rule.PropertyMatchRules.Rules.Num())
+	{
+		Asset  = AssetData.GetAsset();
+	}
 
 	auto IsFloatLambda = [](UObject* Object,const FString& PropertyName)->bool
 	{

@@ -13,6 +13,12 @@ static const FName ResScannerTabName("ResScanner");
 
 #define LOCTEXT_NAMESPACE "FResScannerEditorModule"
 
+FResScannerEditorModule& FResScannerEditorModule::Get()
+{
+	FResScannerEditorModule& Module = FModuleManager::GetModuleChecked<FResScannerEditorModule>("ResScannerEditor");
+	return Module;
+}
+
 void FResScannerEditorModule::StartupModule()
 {
 	FResScannerStyle::Initialize();
@@ -38,6 +44,9 @@ void FResScannerEditorModule::StartupModule()
 
 		LevelEditorModule.GetToolBarExtensibilityManager()->AddExtender(ToolbarExtender);
 	}
+
+	MissionNotifyProay = NewObject<UScannerNotificationProxy>();
+	MissionNotifyProay->AddToRoot();
 }
 
 void FResScannerEditorModule::ShutdownModule()
@@ -84,6 +93,39 @@ TSharedRef<class SDockTab> FResScannerEditorModule::OnSpawnPluginTab(const class
 void FResScannerEditorModule::OnTabClosed(TSharedRef<SDockTab> InTab)
 {
 	DockTab.Reset();
+}
+
+
+void FResScannerEditorModule::RunProcMission(const FString& Bin, const FString& Command, const FString& MissionName)
+{
+	if (mProcWorkingThread.IsValid() && mProcWorkingThread->GetThreadStatus()==EThreadStatus::Busy)
+	{
+		mProcWorkingThread->Cancel();
+	}
+	else
+	{
+		mProcWorkingThread = MakeShareable(new FProcWorkerThread(*FString::Printf(TEXT("PakPresetThread_%s"),*MissionName), Bin, Command));
+		mProcWorkingThread->ProcOutputMsgDelegate.AddUObject(MissionNotifyProay,&UScannerNotificationProxy::ReceiveOutputMsg);
+		mProcWorkingThread->ProcBeginDelegate.AddUObject(MissionNotifyProay,&UScannerNotificationProxy::SpawnRuningMissionNotification);
+		mProcWorkingThread->ProcSuccessedDelegate.AddUObject(MissionNotifyProay,&UScannerNotificationProxy::SpawnMissionSuccessedNotification);
+		mProcWorkingThread->ProcFaildDelegate.AddUObject(MissionNotifyProay,&UScannerNotificationProxy::SpawnMissionFaildNotification);
+		MissionNotifyProay->SetMissionName(*FString::Printf(TEXT("%s"),*MissionName));
+		MissionNotifyProay->SetMissionNotifyText(
+			FText::FromString(FString::Printf(TEXT("%s in progress"),*MissionName)),
+			LOCTEXT("RunningCookNotificationCancelButton", "Cancel"),
+			FText::FromString(FString::Printf(TEXT("%s Mission Finished!"),*MissionName)),
+			FText::FromString(FString::Printf(TEXT("%s Failed!"),*MissionName))
+		);
+		MissionNotifyProay->MissionCanceled.AddLambda([this]()
+		{
+			if (mProcWorkingThread.IsValid() && mProcWorkingThread->GetThreadStatus() == EThreadStatus::Busy)
+			{
+				mProcWorkingThread->Cancel();
+			}
+		});
+		
+		mProcWorkingThread->Execute();
+	}
 }
 
 #undef LOCTEXT_NAMESPACE

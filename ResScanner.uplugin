@@ -24,6 +24,11 @@
 			"Name": "ResScannerEditor",
 			"Type": "Editor",
 			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "GitSourceControlEx",
+			"Type": "Developer",
+			"LoadingPhase": "Default"
 		}
 	]
 }
