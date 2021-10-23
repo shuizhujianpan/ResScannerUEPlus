@@ -5,10 +5,11 @@
 #include "TemplateHelper.hpp"
 
 // engine header
-#include "Async.h"
+#include "Async/Async.h"
 #include "Kismet/KismetStringLibrary.h"
 #include "AssetRegistryModule.h"
 #include "ARFilter.h"
+#include "FlibSourceControlHelper.h"
 #include "Engine/AssetManager.h"
 #include "Framework/Notifications/NotificationManager.h"
 #include "Widgets/Notifications/SNotificationList.h"
@@ -194,7 +195,86 @@ bool UFlibAssetParseHelper::IsIgnoreAsset(const FAssetData& AssetData, const TAr
 	return bIsIgnored;
 }
 
+#define ENGINEDIR_MARK TEXT("[ENGINEDIR]")
+#define ENGINE_CONTENT_DIR_MARK TEXT("[ENGINE_CONTENT_DIR]")
+#define PROJECTDIR_MARK TEXT("[PROJECTDIR]")
+#define PROJECT_CONTENT_DIR_MARK TEXT("[PROJECT_CONTENT_DIR]")
+#define PROJECT_SAVED_DIR_MARK TEXT("[PROJECT_SAVED_DIR]")
+#define PROJECT_CONFIG_DIR_MARK TEXT("[PROJECT_CONFIG_DIR]")
 
+TMap<FString, FString> UFlibAssetParseHelper::GetReplacePathMarkMap()
+{
+	TMap<FString,FString> MarkMap;
+	MarkMap.Add(ENGINEDIR_MARK,FPaths::EngineDir());
+	MarkMap.Add(ENGINE_CONTENT_DIR_MARK,FPaths::EngineContentDir());
+	MarkMap.Add(PROJECTDIR_MARK,FPaths::ProjectDir());
+	MarkMap.Add(PROJECT_CONTENT_DIR_MARK,FPaths::ProjectContentDir());
+	MarkMap.Add(PROJECT_SAVED_DIR_MARK,FPaths::ProjectSavedDir());
+	MarkMap.Add(PROJECT_CONFIG_DIR_MARK,FPaths::ProjectConfigDir());
+	return MarkMap;
+}
+
+FString UFlibAssetParseHelper::ReplaceMarkPath(const FString& Src)
+{
+	TMap<FString,FString> MarkMap = UFlibAssetParseHelper::GetReplacePathMarkMap();
+	auto ReplaceProjectDir = [&MarkMap](const FString& OriginDir)->FString
+	{
+		TArray<FString> MarkKeys;
+		MarkMap.GetKeys(MarkKeys);
+		
+		FString result = OriginDir;
+		for(const auto& Key:MarkKeys)
+		{
+			if(OriginDir.StartsWith(Key))
+			{
+				result = OriginDir;
+				result.RemoveFromStart(Key,ESearchCase::IgnoreCase);
+				result = FPaths::Combine(MarkMap[Key],result);
+				break;
+			}
+		}
+
+		FPaths::MakeStandardFilename(result);
+		result = FPaths::ConvertRelativePathToFull(result);
+		return result;
+	};
+	return ReplaceProjectDir(Src);
+}
+
+TArray<FSoftObjectPath> UFlibAssetParseHelper::GetAssetsByGitChecker(const FGitChecker& GitChecker,
+	const FString& GitBinaryOpt)
+{
+	return UFlibAssetParseHelper::GetAssetsByGitCommitHash(GitBinaryOpt,GitChecker.GetRepoDir(),GitChecker.BeginCommitHash,GitChecker.EndCommitHash);
+}
+
+TArray<FSoftObjectPath> UFlibAssetParseHelper::GetAssetsByGitCommitHash(const FString& RepoDir,
+	const FString& BeginHash, const FString& EndHand, const FString& GitBinaryOpt)
+{
+	TArray<FSoftObjectPath> ResultAssets;
+	TArray<FString> GitCommitFiles;
+	TArray<FString> OutErrorMessages;
+	if(UFlibSourceControlHelper::DiffVersion(GitBinaryOpt,RepoDir,BeginHash,EndHand,GitCommitFiles,OutErrorMessages))
+	{
+		for(auto& File:GitCommitFiles)
+		{
+			FString Left,Right;
+			File.Split(TEXT("."),&Left,&Right,ESearchCase::CaseSensitive,ESearchDir::FromEnd);
+			FString FileName;
+			{
+				FString Path;
+				Left.Split(TEXT("/"),&Path,&FileName,ESearchCase::CaseSensitive,ESearchDir::FromEnd);
+			}
+					
+			FString AssetPath = FString::Printf(TEXT("/Game/%s.%s"),*Left,*FileName);
+			FSoftObjectPath CurrentAsset(AssetPath);
+			if(CurrentAsset.IsValid())
+			{
+				ResultAssets.Add(CurrentAsset);
+			}
+		}
+	}
+	return ResultAssets;
+}
 
 bool NameMatchOperator::Match(const FAssetData& AssetData,const FScannerMatchRule& Rule)
 {
@@ -210,20 +290,25 @@ bool NameMatchOperator::Match(const FAssetData& AssetData,const FScannerMatchRul
 			{
 			case ENameMatchMode::StartWith:
 				{
-					bMatchResult = AssetName.StartsWith(RuleItem);
+					bMatchResult = AssetName.StartsWith(RuleItem.RuleText);
 					break;
 				}
 			case ENameMatchMode::EndWith:
 				{
-					bMatchResult = AssetName.EndsWith(RuleItem);
+					bMatchResult = AssetName.EndsWith(RuleItem.RuleText);
 					break;
 				}
 			case ENameMatchMode::Wildcard:
 				{
-					bMatchResult = AssetName.MatchesWildcard(RuleItem,ESearchCase::IgnoreCase);
+					bMatchResult = AssetName.MatchesWildcard(RuleItem.RuleText,ESearchCase::IgnoreCase);
 					break;
 				}
 			}
+			if(RuleItem.bReverseCheck)
+			{
+				bMatchResult = !bMatchResult;
+			}
+			
 			if(bMatchResult)
 			{
 				OptionalMatchNum++;
@@ -257,14 +342,18 @@ bool PathMatchOperator::Match(const FAssetData& AssetData,const FScannerMatchRul
 			{
 			case EPathMatchMode::WithIn:
 				{
-					bMatchResult = AssetPath.StartsWith(RuleItem);
+					bMatchResult = AssetPath.StartsWith(RuleItem.RuleText);
 					break;
 				}
 			case EPathMatchMode::Wildcard:
 				{
-					bMatchResult = AssetPath.MatchesWildcard(RuleItem,ESearchCase::IgnoreCase);
+					bMatchResult = AssetPath.MatchesWildcard(RuleItem.RuleText,ESearchCase::IgnoreCase);
 					break;
 				}
+			}
+			if(RuleItem.bReverseCheck)
+			{
+				bMatchResult = !bMatchResult;
 			}
 			if(bMatchResult)
 			{
@@ -289,7 +378,7 @@ bool PropertyMatchOperator::Match(const FAssetData& AssetData,const FScannerMatc
 {
 	bool bIsMatched = true;
 	UObject* Asset = NULL;
-	if(!!Rule.PropertyMatchRules.Rules.Num())
+	if(!!Rule.PropertyMatchRules.MatchRules.Num())
 	{
 		Asset  = AssetData.GetAsset();
 	}
@@ -306,7 +395,7 @@ bool PropertyMatchOperator::Match(const FAssetData& AssetData,const FScannerMatc
 		return (LValue == RValue);
 	};
 	
-	for(const auto& MatchRule:Rule.PropertyMatchRules.Rules)
+	for(const auto& MatchRule:Rule.PropertyMatchRules.MatchRules)
 	{
 		int32 OptionalMatchNum = 0;
 		for(const auto& PropertyRule:MatchRule.Rules)
@@ -339,7 +428,7 @@ bool PropertyMatchOperator::Match(const FAssetData& AssetData,const FScannerMatc
 			break;
 		}
 	}
-	if(Rule.PropertyMatchRules.Rules.Num())
+	if(Rule.PropertyMatchRules.MatchRules.Num())
 	{
 		bIsMatched = Rule.PropertyMatchRules.bReverseCheck ? !bIsMatched : bIsMatched;
 	}
@@ -370,3 +459,5 @@ bool CustomMatchOperator::Match(const FAssetData& AssetData,const FScannerMatchR
 	}
 	return bIsMatched;
 }
+
+

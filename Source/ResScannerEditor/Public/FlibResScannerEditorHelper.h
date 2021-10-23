@@ -19,4 +19,5 @@ public:
 	static TArray<FString> SaveFileDialog();
 	static FString GetUECmdBinary();
 	static FString GetProjectFilePath();
+	
 };

@@ -17,17 +17,17 @@
 	"Modules": [
 		{
 			"Name": "ResScanner",
-			"Type": "Runtime",
-			"LoadingPhase": "Default"
-		},
-		{
-			"Name": "ResScannerEditor",
-			"Type": "Editor",
+			"Type": "Developer",
 			"LoadingPhase": "Default"
 		},
 		{
 			"Name": "GitSourceControlEx",
 			"Type": "Developer",
+			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "ResScannerEditor",
+			"Type": "Editor",
 			"LoadingPhase": "Default"
 		}
 	]

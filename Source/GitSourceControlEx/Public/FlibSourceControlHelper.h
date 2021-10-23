@@ -4,8 +4,7 @@
 
 #include "FGitCommitInfo.h"
 #include "FGitSourceControlRevisionData.h"
-
-#include "NumericLimits.h"
+#include "Math/NumericLimits.h"
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "FlibSourceControlHelper.generated.h"
@@ -38,7 +37,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "GitSourceControlEx|Flib")
 		static bool GetRemoteUrl(const FString& InPathToGitBinary, const FString& InRepositoryRoot, FString& OutRemoteUrl);
 
-
+	UFUNCTION(BlueprintCallable, Category = "GitSourceControlEx|Flib")
+		static bool FindRootDirectory(const FString& InPath, FString& OutRepositoryRoot);
 	/**
 	 * Run a Git "log" command and parse it.
 	 *

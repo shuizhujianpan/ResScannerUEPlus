@@ -31,7 +31,8 @@ public class ResScannerEditor : ModuleRules
 				"JsonUtilities",
 				"Projects",
 				"DesktopPlatform",
-				"GitSourceControlEx"
+				"GitSourceControlEx",
+				"PropertyEditor"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);

@@ -8,6 +8,7 @@
 #include "CoreMinimal.h"
 
 #include "ResScannerProxy.h"
+#include "AssetRegistry/AssetRegistryModule.h"
 #include "Misc/FileHelper.h"
 #include "Misc/CommandLine.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -50,6 +51,7 @@ TArray<FSoftObjectPath> GetCommitFileListObjects(const FString& ContentDir,const
 	return result;
 }
 #include "FlibSourceControlHelper.h"
+#include "ReplacePropertyHelper.hpp"
 
 int32 UResScannerCommandlet::Main(const FString& Params)
 {
@@ -80,40 +82,16 @@ int32 UResScannerCommandlet::Main(const FString& Params)
 	{
 		InAssets = GetCommitFileListObjects(FPaths::ConvertRelativePathToFull(FPaths::ProjectContentDir()),CommitFileList);
 	}
-	
-	bool bIsGitCheck = FParse::Param(FCommandLine::Get(), TEXT("gitcheck"));
-	
-	FString GitBeginHash,GitEndHash;
-	if(bIsGitCheck)
+
+
+	if(IsRunningCommandlet())
 	{
-		bool bGitBeginHash = FParse::Value(*Params, *FString(GIT_BEGIN_HASH).ToLower(), GitBeginHash);
-		bool bGitEndHash = FParse::Value(*Params, *FString(GIT_END_HASH).ToLower(), GitEndHash);
-	
-		if(bGitBeginHash && bGitEndHash)
-		{
-			TArray<FString> OutResault;
-			if(UFlibSourceControlHelper::DiffVersionByGlobalGit(FPaths::ConvertRelativePathToFull(FPaths::ProjectContentDir()),GitBeginHash,GitEndHash,OutResault))
-			{
-				for(auto& File:OutResault)
-				{
-					FString Left,Right;
-					File.Split(TEXT("."),&Left,&Right,ESearchCase::CaseSensitive,ESearchDir::FromEnd);
-					FString FileName;
-					{
-						FString Path;
-						Left.Split(TEXT("/"),&Path,&FileName,ESearchCase::CaseSensitive,ESearchDir::FromEnd);
-					}
-					
-					FString AssetPath = FString::Printf(TEXT("/Game/%s.%s"),*Left,*FileName);
-					FSoftObjectPath CurrentAsset(AssetPath);
-					if(CurrentAsset.IsValid())
-					{
-						InAssets.Add(CurrentAsset);
-					}
-				}
-			}
-		}
+		FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
+		AssetRegistryModule.Get().SearchAllAssets(true);
 	}
+
+	TMap<FString, FString> TokenValues = ReplacePropertyHelper::GetCommandLineParamsMap(Params);
+	
 	
 	FString JsonContent;
 	if (FFileHelper::LoadFileToString(JsonContent, *config_path))
@@ -121,7 +99,9 @@ int32 UResScannerCommandlet::Main(const FString& Params)
 		UE_LOG(LogResScannerCommandlet, Display, TEXT("%s"), *JsonContent);
 		FScannerConfig ScannerConfig;
 		TemplateHelper::TDeserializeJsonStringAsStruct(JsonContent,ScannerConfig);
-		ScannerConfig.bByGlobalScanFilters = ScannerConfig.bByGlobalScanFilters || bIsFileCheck || bIsGitCheck;
+		ReplacePropertyHelper::ReplaceProperty(ScannerConfig,TokenValues);
+		
+		ScannerConfig.bByGlobalScanFilters = ScannerConfig.bByGlobalScanFilters || bIsFileCheck;
 		ScannerConfig.GlobalScanFilters.Assets.Append(InAssets);
 		UResScannerProxy* ScannerProxy = NewObject<UResScannerProxy>();
 		ScannerProxy->Init();

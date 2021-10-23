@@ -4,9 +4,10 @@
 #include "SResScannerConfigPage.h"
 #include "ResScannerProxy.h"
 #include "ResScannerEditor.h"
+#include "DetailCustomization/ScannerSettingsDetails.h"
+#include "FlibResScannerEditorHelper.h"
 
 // engine header
-#include "FlibResScannerEditorHelper.h"
 #include "Misc/FileHelper.h"
 #include "Widgets/Input/SHyperlink.h"
 #include "Widgets/Layout/SSeparator.h"
@@ -16,7 +17,6 @@
 #include "Misc/SecureHash.h"
 #include "HAL/FileManager.h"
 #include "Kismet/KismetTextLibrary.h"
-
 
 #define LOCTEXT_NAMESPACE "SResScannerConfigPage"
 
@@ -237,6 +237,7 @@ void SResScannerConfigPage::CreateExportFilterListView()
 
 	SettingsView = EditModule.CreateStructureDetailView(DetailsViewArgs, StructureViewArgs, nullptr);
 	FStructOnScope* Struct = new FStructOnScope(FScannerConfig::StaticStruct(), (uint8*)ScannerConfig.Get());
+	SettingsView->GetDetailsView()->RegisterInstancedCustomPropertyLayout(FScannerConfig::StaticStruct(),FOnGetDetailCustomizationInstance::CreateStatic(&FScannerSettingsDetails::MakeInstance));
 	SettingsView->SetStructureData(MakeShareable(Struct));
 }
 

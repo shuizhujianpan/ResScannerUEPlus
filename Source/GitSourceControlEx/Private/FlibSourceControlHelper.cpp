@@ -71,6 +71,11 @@ bool UFlibSourceControlHelper::GetRemoteUrl(const FString& InPathToGitBinary, co
 	return GitSourceControlUtils::GetRemoteUrl(InPathToGitBinary, InRepositoryRoot, OutRemoteUrl);
 }
 
+bool UFlibSourceControlHelper::FindRootDirectory(const FString& InPath, FString& OutRepositoryRoot)
+{
+	return GitSourceControlUtils::FindRootDirectory(InPath,OutRepositoryRoot);
+}
+
 bool UFlibSourceControlHelper::RunGetHistory(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const FString& InFile, bool bMergeConflict, TArray<FString>& OutErrorMessages, TArray<FGitSourceControlRevisionData>& OutHistory, int32 InHistoryDepth)
 {
 	TGitSourceControlHistory local_resault;

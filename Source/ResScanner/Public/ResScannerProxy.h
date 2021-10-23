@@ -20,6 +20,8 @@ public:
     virtual void DoScan();
     UFUNCTION(BlueprintCallable)
     virtual void SetScannerConfig(FScannerConfig InConfig);
+
+    void ScanSingleRule(const TArray<FAssetData>& GlobalAssets,const FScannerMatchRule& ScannerRule,int32 RuleID = 0);
     
     virtual TSharedPtr<FScannerConfig> GetScannerConfig(){return ScannerConfig;}
     virtual TMap<FString,TSharedPtr<IMatchOperator>>& GetMatchOperators(){return MatchOperators;}

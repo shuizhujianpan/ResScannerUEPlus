@@ -7,7 +7,9 @@
 #if ENGINE_MAJOR_VERSION > 4 || ENGINE_MINOR_VERSION>=26
 	#define InvokeTab TryInvokeTab
 #endif
+#include "EditorModeRegistry.h"
 #include "SResScanner.h"
+#include "DetailCustomization/CustomPropertyMatchMappingDetails.h"
 
 static const FName ResScannerTabName("ResScanner");
 
@@ -45,6 +47,12 @@ void FResScannerEditorModule::StartupModule()
 		LevelEditorModule.GetToolBarExtensibilityManager()->AddExtender(ToolbarExtender);
 	}
 
+	{
+#if WITH_EDITOR
+		FPropertyEditorModule& PropertyEditorModule = FModuleManager::GetModuleChecked<FPropertyEditorModule>("PropertyEditor");
+		PropertyEditorModule.RegisterCustomPropertyTypeLayout("PropertyMatchMapping", FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FCustomPropertyMatchMappingDetails::MakeInstance));
+#endif
+	}
 	MissionNotifyProay = NewObject<UScannerNotificationProxy>();
 	MissionNotifyProay->AddToRoot();
 }

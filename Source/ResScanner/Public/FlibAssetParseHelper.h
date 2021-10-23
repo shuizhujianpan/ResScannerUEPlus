@@ -30,6 +30,12 @@ public:
 	static TArray<FAssetData> GetAssetsWithCachedByTypes(const TArray<FAssetData>& CachedAssets, const TArray<FString>& AssetTypes);
 	static class IAssetRegistry& GetAssetRegistry(bool bSearchAllAssets = false);
 	static bool IsIgnoreAsset(const FAssetData& AssetData,const TArray<FAssetFilters>& IgnoreRules);
+	
+	static TMap<FString, FString> GetReplacePathMarkMap();
+	static FString ReplaceMarkPath(const FString& Src);
+
+	static TArray<FSoftObjectPath> GetAssetsByGitChecker(const FGitChecker& GitChecker,const FString& GitBinaryOpt = TEXT(""));
+	static TArray<FSoftObjectPath> GetAssetsByGitCommitHash(const FString& RepoDir,const FString& BeginHash,const FString& EndHand,const FString& GitBinaryOpt = TEXT(""));
 };
 
 struct IMatchOperator

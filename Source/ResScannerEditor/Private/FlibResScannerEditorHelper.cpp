@@ -107,4 +107,5 @@ FString UFlibResScannerEditorHelper::GetProjectFilePath()
 	return ProjectFilePath;
 }
 
+
 #undef LOCTEXT_NAMESPACE
