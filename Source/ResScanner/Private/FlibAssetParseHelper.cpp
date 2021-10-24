@@ -97,6 +97,7 @@ TArray<FAssetData> UFlibAssetParseHelper::GetAssetsByFilters(const TArray<FStrin
 	Filter.PackagePaths.Append(FilterPaths);
 	Filter.ClassNames.Append(AssetTypes);
 	Filter.bRecursivePaths = true;
+	Filter.bRecursiveClasses = true;
 	UFlibAssetParseHelper::GetAssetRegistry().GetAssets(Filter, result);
 	return result;
 }
@@ -274,6 +275,32 @@ TArray<FSoftObjectPath> UFlibAssetParseHelper::GetAssetsByGitCommitHash(const FS
 		}
 	}
 	return ResultAssets;
+}
+
+void UFlibAssetParseHelper::CheckMatchedAssetsCommiter(FMatchedResult& MatchedResult, const FString& RepoDir)
+{
+	for(auto& MatchedInfo:MatchedResult.MatchedAssets)
+	{
+		for(const auto& AssetPackageName:MatchedInfo.AssetPackageNames)
+		{
+			FString RealFile;
+			FPackageName::TryConvertLongPackageNameToFilename(AssetPackageName,RealFile,FPackageName::GetAssetPackageExtension());
+			RealFile = FPaths::ConvertRelativePathToFull(RealFile);
+			if(!RealFile.IsEmpty())
+			{
+				RealFile.RemoveFromStart(RepoDir);
+				FGitSourceControlRevisionData Data;
+				if(UFlibSourceControlHelper::GetFileLastCommitByGlobalGit(RepoDir,RealFile,Data))
+				{
+					FFileCommiter FileCommiter;
+					FileCommiter.File = AssetPackageName;
+					FileCommiter.Commiter = Data.UserName;
+					MatchedInfo.AssetsCommiter.Add(FileCommiter);
+				}
+			
+			}
+		}
+	}
 }
 
 bool NameMatchOperator::Match(const FAssetData& AssetData,const FScannerMatchRule& Rule)

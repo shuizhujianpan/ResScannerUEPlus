@@ -127,7 +127,12 @@ void UResScannerProxy::DoScan()
 	{
 		Name = FDateTime::UtcNow().ToString();
 	}
-
+	FRuleMatchedInfo::ResetTransient();
+	FRuleMatchedInfo::SerializeCommiterTransient(GetScannerConfig()->GitChecker.bGitCheck && GetScannerConfig()->GitChecker.bRecordCommiter);
+	if(GetScannerConfig()->GitChecker.bRecordCommiter)
+	{
+		UFlibAssetParseHelper::CheckMatchedAssetsCommiter(MatchedResult,GetScannerConfig()->GitChecker.GetRepoDir());
+	}
 	FString SaveBasePath = UFlibAssetParseHelper::ReplaceMarkPath(GetScannerConfig()->SavePath.Path);
 	// serialize config
 	if(GetScannerConfig()->bSaveConfig)

@@ -36,6 +36,8 @@ public:
 
 	static TArray<FSoftObjectPath> GetAssetsByGitChecker(const FGitChecker& GitChecker,const FString& GitBinaryOpt = TEXT(""));
 	static TArray<FSoftObjectPath> GetAssetsByGitCommitHash(const FString& RepoDir,const FString& BeginHash,const FString& EndHand,const FString& GitBinaryOpt = TEXT(""));
+	
+	static void CheckMatchedAssetsCommiter(FMatchedResult& MatchedResult, const FString& RepoDir);
 };
 
 struct IMatchOperator

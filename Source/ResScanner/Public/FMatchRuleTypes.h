@@ -181,6 +181,17 @@ enum class ERulePriority:uint8
 };
 
 USTRUCT(BlueprintType)
+struct FFileCommiter
+{
+	GENERATED_USTRUCT_BODY()
+public:
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	FString File;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	FString Commiter;
+};
+
+USTRUCT(BlueprintType)
 struct FRuleMatchedInfo
 {
 	GENERATED_USTRUCT_BODY()
@@ -201,6 +212,34 @@ public:
 	TArray<FAssetData> Assets;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 	TArray<FString> AssetPackageNames;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	TArray<FFileCommiter> AssetsCommiter;
+
+	static void SerializeCommiterTransient(bool b)
+	{
+		FString NotSerializeName = !b ?  TEXT("AssetsCommiter"):TEXT("AssetPackageNames");
+		for(TFieldIterator<FProperty> PropertyIter(FRuleMatchedInfo::StaticStruct());PropertyIter;++PropertyIter)
+		{
+			FProperty* PropertyIns = *PropertyIter;
+			if(NotSerializeName.Equals(*PropertyIns->GetName()))
+			{
+				PropertyIns->SetPropertyFlags(CPF_Transient);
+			}
+		}
+	}
+	
+	static void ResetTransient()
+	{
+		TArray<FString> NotSerializeNames = {TEXT("AssetsCommiter"),TEXT("AssetPackageNames")};
+		for(TFieldIterator<FProperty> PropertyIter(FRuleMatchedInfo::StaticStruct());PropertyIter;++PropertyIter)
+		{
+			FProperty* PropertyIns = *PropertyIter;
+			if(NotSerializeNames.Contains(*PropertyIns->GetName()) && PropertyIns->HasAnyPropertyFlags(CPF_Transient))
+			{
+				PropertyIns->ClearPropertyFlags(CPF_Transient);
+			}
+		}
+	}
 };
 
 UCLASS(Blueprintable,BlueprintType)
@@ -288,6 +327,8 @@ public:
 	}
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="启用Git仓库扫描",Category="GitChecker")
 	bool bGitCheck = false;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="记录提交人",Category="GitChecker",meta=(EditCondition="bGitCheck"))
+	bool bRecordCommiter = false;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="Git仓库地址",Category="GitChecker",meta=(EditCondition="bGitCheck"))
 	FDirectoryPath RepoDir;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="检查开始的Commit",Category="GitChecker",meta=(EditCondition="bGitCheck"))
