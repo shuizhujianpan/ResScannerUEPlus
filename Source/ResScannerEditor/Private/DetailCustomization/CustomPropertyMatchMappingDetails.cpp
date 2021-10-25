@@ -5,7 +5,6 @@
 #include "DetailCategoryBuilder.h"
 #include "DetailWidgetRow.h"
 #include "IDetailChildrenBuilder.h"
-#include "PropertyEditor/Private/DetailPropertyRow.h"
 #include "Widgets/Input/SButton.h"
 #include "Resources/Version.h"
 #define LOCTEXT_NAMESPACE "CustomPropertyMatchMappingDetails"
@@ -27,6 +26,7 @@ void FCustomPropertyMatchMappingDetails::RefreshCustomizeHead()
     if(AllPropertyNames.Num())
         CreatePropertyWidgetLambda(AllPropertySelector,AllPropertyNames,PropertyNameHandle,PropertyNameComboContent);
 }
+
 
 TSharedRef<SWidget> FCustomPropertyMatchMappingDetails::HandleGenerateWidget_ForPropertyNamesComboBox(TSharedPtr<FString> Item) const
 {
@@ -144,7 +144,6 @@ void FCustomPropertyMatchMappingDetails::HandleSelectionChanged_ForPropertyNames
 void FCustomPropertyMatchMappingDetails::CustomizeHeader(TSharedRef<IPropertyHandle> StructPropertyHandle,
                                                          FDetailWidgetRow& HeaderRow, IPropertyTypeCustomizationUtils& StructCustomizationUtils)
 {
-    FDetailPropertyRow* PropertyRow = static_cast<FDetailPropertyRow*>(&StructCustomizationUtils);
     MatchRuleHandle = StructPropertyHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FPropertyMatchMapping, MatchRule));
     MatchValueHandle = StructPropertyHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FPropertyMatchMapping, MatchValue));
     PropertyNameHandle = StructPropertyHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FPropertyMatchMapping, PropertyName));
