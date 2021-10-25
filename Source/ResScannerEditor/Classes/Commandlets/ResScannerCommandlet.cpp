@@ -8,7 +8,7 @@
 #include "CoreMinimal.h"
 
 #include "ResScannerProxy.h"
-#include "AssetRegistry/AssetRegistryModule.h"
+#include "AssetRegistryModule.h"
 #include "Misc/FileHelper.h"
 #include "Misc/CommandLine.h"
 #include "Kismet/KismetSystemLibrary.h"
