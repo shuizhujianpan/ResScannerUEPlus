@@ -46,11 +46,11 @@ void UResScannerProxy::ScanSingleRule(const TArray<FAssetData>& GlobalAssets,con
 	TArray<FAssetData> FilterAssets;
 	if(GetScannerConfig()->bByGlobalScanFilters || GetScannerConfig()->GitChecker.bGitCheck)
 	{
-		FilterAssets = UFlibAssetParseHelper::GetAssetsWithCachedByTypes(GlobalAssets,TArray<UClass*>{ScannerRule.ScanAssetType});
+		FilterAssets = UFlibAssetParseHelper::GetAssetsWithCachedByTypes(GlobalAssets,TArray<UClass*>{ScannerRule.ScanAssetType},ScannerRule.RecursiveClasses);
 	}
 	if(!GetScannerConfig()->bBlockRuleFilter)
 	{
-		FilterAssets.Append(UFlibAssetParseHelper::GetAssetsByFiltersByClass(TArray<UClass*>{ScannerRule.ScanAssetType},ScannerRule.ScanFilters));
+		FilterAssets.Append(UFlibAssetParseHelper::GetAssetsByFiltersByClass(TArray<UClass*>{ScannerRule.ScanAssetType},ScannerRule.ScanFilters,ScannerRule.RecursiveClasses));
 	}
 	RuleMatchedInfo.RuleName = ScannerRule.RuleName;
 	RuleMatchedInfo.RuleDescribe = ScannerRule.RuleDescribe;
@@ -96,7 +96,7 @@ void UResScannerProxy::DoScan()
 	if(GetScannerConfig()->bByGlobalScanFilters)
 	{
 		 GlobalAssets = UFlibAssetParseHelper::GetAssetsByObjectPath(GetScannerConfig()->GlobalScanFilters.Assets);
-		 GlobalAssets.Append(UFlibAssetParseHelper::GetAssetsByFiltersByClass(TArray<UClass*>{},GetScannerConfig()->GlobalScanFilters.Filters));
+		 GlobalAssets.Append(UFlibAssetParseHelper::GetAssetsByFiltersByClass(TArray<UClass*>{},GetScannerConfig()->GlobalScanFilters.Filters, true));
 	}
 	if(GetScannerConfig()->GitChecker.bGitCheck)
 	{
@@ -128,7 +128,7 @@ void UResScannerProxy::DoScan()
 		Name = FDateTime::UtcNow().ToString();
 	}
 	FRuleMatchedInfo::ResetTransient();
-	FRuleMatchedInfo::SerializeCommiterTransient(GetScannerConfig()->GitChecker.bGitCheck && GetScannerConfig()->GitChecker.bRecordCommiter);
+	FRuleMatchedInfo::SetSerializeTransient(GetScannerConfig()->GitChecker.bGitCheck && GetScannerConfig()->GitChecker.bRecordCommiter);
 	if(GetScannerConfig()->GitChecker.bRecordCommiter)
 	{
 		UFlibAssetParseHelper::CheckMatchedAssetsCommiter(MatchedResult,GetScannerConfig()->GitChecker.GetRepoDir());

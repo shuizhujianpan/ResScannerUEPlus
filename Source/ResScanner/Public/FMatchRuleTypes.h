@@ -215,9 +215,9 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 	TArray<FFileCommiter> AssetsCommiter;
 
-	static void SerializeCommiterTransient(bool b)
+	static void SetSerializeTransient(bool bCommiter)
 	{
-		FString NotSerializeName = !b ?  TEXT("AssetsCommiter"):TEXT("AssetPackageNames");
+		FString NotSerializeName = bCommiter ? TEXT("AssetPackageNames") : TEXT("AssetsCommiter");
 		for(TFieldIterator<FProperty> PropertyIter(FRuleMatchedInfo::StaticStruct());PropertyIter;++PropertyIter)
 		{
 			FProperty* PropertyIns = *PropertyIter;
@@ -289,6 +289,8 @@ public:
 	// 资源类型
 	UPROPERTY(EditAnywhere, BlueprintReadWrite,DisplayName="扫描资源类型",Category = "Filter")
 	UClass* ScanAssetType;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite,DisplayName="递归子类类型",Category = "Filter")
+	bool RecursiveClasses = true;
 	// 命名匹配规则
 	UPROPERTY(EditAnywhere, BlueprintReadWrite,DisplayName="命名匹配",Category = "Filter")
 	FNameMatchRule NameMatchRules;

@@ -65,7 +65,7 @@ FString UFlibAssetParseHelper::GetPropertyValueByName(UObject* Obj, const FStrin
 	return Result;
 }
 
-TArray<FAssetData> UFlibAssetParseHelper::GetAssetsByFiltersByClass(const TArray<UClass*>& AssetTypes,const TArray<FDirectoryPath>& FilterDirectorys)
+TArray<FAssetData> UFlibAssetParseHelper::GetAssetsByFiltersByClass(const TArray<UClass*>& AssetTypes, const TArray<FDirectoryPath>& FilterDirectorys, bool bRecursiveClasses)
 {
 	TArray<FString> Types;
 	for(auto& Type:AssetTypes)
@@ -75,29 +75,29 @@ TArray<FAssetData> UFlibAssetParseHelper::GetAssetsByFiltersByClass(const TArray
 			Types.AddUnique(Type->GetName());
 		}
 	}
-	return UFlibAssetParseHelper::GetAssetsByFilters(Types,FilterDirectorys);
+	return UFlibAssetParseHelper::GetAssetsByFilters(Types,FilterDirectorys,bRecursiveClasses);
 }
 
 TArray<FAssetData> UFlibAssetParseHelper::GetAssetsByFilters(const TArray<FString>& AssetTypes,
-                                                             const TArray<FDirectoryPath>& FilterDirectorys)
+                                                             const TArray<FDirectoryPath>& FilterDirectorys, bool bRecursiveClasses)
 {
 	TArray<FString> FilterPaths;
 	for(const auto& Directory:FilterDirectorys)
 	{
 		FilterPaths.AddUnique(Directory.Path);
 	}
-	return UFlibAssetParseHelper::GetAssetsByFilters(AssetTypes,FilterPaths);
+	return UFlibAssetParseHelper::GetAssetsByFilters(AssetTypes,FilterPaths,bRecursiveClasses);
 }
 
 TArray<FAssetData> UFlibAssetParseHelper::GetAssetsByFilters(const TArray<FString>& AssetTypes,
-                                                             const TArray<FString>& FilterPaths)
+                                                             const TArray<FString>& FilterPaths, bool bRecursiveClasses)
 {
 	TArray<FAssetData> result;
 	FARFilter Filter;
 	Filter.PackagePaths.Append(FilterPaths);
 	Filter.ClassNames.Append(AssetTypes);
 	Filter.bRecursivePaths = true;
-	Filter.bRecursiveClasses = true;
+	Filter.bRecursiveClasses = bRecursiveClasses;
 	UFlibAssetParseHelper::GetAssetRegistry().GetAssets(Filter, result);
 	return result;
 }
@@ -118,7 +118,7 @@ TArray<FAssetData> UFlibAssetParseHelper::GetAssetsByObjectPath(const TArray<FSo
 }
 
 TArray<FAssetData> UFlibAssetParseHelper::GetAssetsWithCachedByTypes(const TArray<FAssetData>& CachedAssets,
-	const TArray<UClass*>& AssetTypes)
+	const TArray<UClass*>& AssetTypes,bool bRecursiveClasses)
 {
 	TArray<FString> Types;
 	for(auto& Type:AssetTypes)
@@ -132,18 +132,27 @@ TArray<FAssetData> UFlibAssetParseHelper::GetAssetsWithCachedByTypes(const TArra
 	{
 		UE_LOG(LogFlibAssetParseHelper,Error,TEXT("GetAssetsWithCachedByTypes Types is Emppty,Search all asset types."));
 	}
-	return UFlibAssetParseHelper::GetAssetsWithCachedByTypes(CachedAssets,Types);
+	return UFlibAssetParseHelper::GetAssetsWithCachedByTypes(CachedAssets,Types,bRecursiveClasses);
 }
 
 TArray<FAssetData> UFlibAssetParseHelper::GetAssetsWithCachedByTypes(const TArray<FAssetData>& CachedAssets,
-                                                                     const TArray<FString>& AssetTypes)
+                                                                     const TArray<FString>& AssetTypes,bool bRecursiveClasses)
 {
 	TArray<FAssetData> result;
 	for(const auto& CachedAsset:CachedAssets)
 	{
 		for(const auto& Type:AssetTypes)
 		{
-			if(CachedAsset.AssetClass.ToString().Equals(Type))
+			bool bCheckChild = true;
+			if(bRecursiveClasses)
+			{
+				UClass* FoundClass = FindObject<UClass>(ANY_PACKAGE, *Type, true);
+				if(FoundClass)
+				{
+					bCheckChild = CachedAsset.GetClass()->IsChildOf(FoundClass);
+				}
+			}
+			if(CachedAsset.AssetClass.ToString().Equals(Type) && bCheckChild)
 			{
 				result.AddUnique(CachedAsset);
 				break;
@@ -245,7 +254,7 @@ FString UFlibAssetParseHelper::ReplaceMarkPath(const FString& Src)
 TArray<FSoftObjectPath> UFlibAssetParseHelper::GetAssetsByGitChecker(const FGitChecker& GitChecker,
 	const FString& GitBinaryOpt)
 {
-	return UFlibAssetParseHelper::GetAssetsByGitCommitHash(GitBinaryOpt,GitChecker.GetRepoDir(),GitChecker.BeginCommitHash,GitChecker.EndCommitHash);
+	return UFlibAssetParseHelper::GetAssetsByGitCommitHash(GitChecker.GetRepoDir(),GitChecker.BeginCommitHash,GitChecker.EndCommitHash,GitBinaryOpt);
 }
 
 TArray<FSoftObjectPath> UFlibAssetParseHelper::GetAssetsByGitCommitHash(const FString& RepoDir,
