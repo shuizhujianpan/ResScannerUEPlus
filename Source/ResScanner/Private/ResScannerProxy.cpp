@@ -110,11 +110,13 @@ void UResScannerProxy::DoScan()
 			UE_LOG(LogTemp,Log,TEXT("%s is not a valid git repo."),*OutRepoDir);
 		}
 	}
-	
-	TArray<FScannerMatchRule> ImportRules = GetScannerConfig()->GetTableRules();
-	for(int32 RuleID = 0;RuleID < ImportRules.Num();++RuleID)
+	if(GetScannerConfig()->bUseRulesTable)
 	{
-		ScanSingleRule(GlobalAssets,ImportRules[RuleID],RuleID);
+		TArray<FScannerMatchRule> ImportRules = GetScannerConfig()->GetTableRules();
+		for(int32 RuleID = 0;RuleID < ImportRules.Num();++RuleID)
+		{
+			ScanSingleRule(GlobalAssets,ImportRules[RuleID],RuleID);
+		}
 	}
 	
 	for(int32 RuleID = 0;RuleID < GetScannerConfig()->ScannerRules.Num();++RuleID)

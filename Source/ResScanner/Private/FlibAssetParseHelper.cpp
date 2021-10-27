@@ -93,12 +93,16 @@ TArray<FAssetData> UFlibAssetParseHelper::GetAssetsByFilters(const TArray<FStrin
                                                              const TArray<FString>& FilterPaths, bool bRecursiveClasses)
 {
 	TArray<FAssetData> result;
-	FARFilter Filter;
-	Filter.PackagePaths.Append(FilterPaths);
-	Filter.ClassNames.Append(AssetTypes);
-	Filter.bRecursivePaths = true;
-	Filter.bRecursiveClasses = bRecursiveClasses;
-	UFlibAssetParseHelper::GetAssetRegistry().GetAssets(Filter, result);
+	if(FilterPaths.Num())
+	{
+		FARFilter Filter;
+		Filter.PackagePaths.Append(FilterPaths);
+		Filter.ClassNames.Append(AssetTypes);
+		Filter.bRecursivePaths = true;
+		Filter.bRecursiveClasses = bRecursiveClasses;
+		UFlibAssetParseHelper::GetAssetRegistry().GetAssets(Filter, result);	
+	}
+
 	return result;
 }
 
