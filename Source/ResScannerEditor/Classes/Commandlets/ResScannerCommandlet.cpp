@@ -94,6 +94,7 @@ int32 UResScannerCommandlet::Main(const FString& Params)
 	
 	
 	FString JsonContent;
+	int iProcessResult = 0;
 	if (FFileHelper::LoadFileToString(JsonContent, *config_path))
 	{
 		UE_LOG(LogResScannerCommandlet, Display, TEXT("%s"), *JsonContent);
@@ -111,10 +112,14 @@ int32 UResScannerCommandlet::Main(const FString& Params)
 		FString OutString;
 		TemplateHelper::TSerializeStructAsJsonString(Result,OutString);
 		UE_LOG(LogResScannerCommandlet, Display, TEXT("\nAsset Scan Result:\n%s"), *OutString);
+		if(Result.MatchedAssets.Num())
+		{
+			iProcessResult = -1;
+		}
 	}
 	if(FParse::Param(FCommandLine::Get(), TEXT("wait")))
 	{
 		system("pause");
 	}
-	return 0;
+	return iProcessResult;
 }
