@@ -26,6 +26,7 @@ public:
     virtual TSharedPtr<FScannerConfig> GetScannerConfig(){return ScannerConfig;}
     virtual TMap<FString,TSharedPtr<IMatchOperator>>& GetMatchOperators(){return MatchOperators;}
     virtual FMatchedResult& GetScanResult(){return MatchedResult;}
+
 protected:
     virtual void PostProcessorMatchRule(const FScannerMatchRule& Rule,const FRuleMatchedInfo& RuleMatchedInfo);    
 private:

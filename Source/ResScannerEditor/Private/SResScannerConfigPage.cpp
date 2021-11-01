@@ -182,8 +182,9 @@ void SResScannerConfigPage::DoScanWork()const
 	if(!ScannerConfig->bStandaloneMode)
 	{
 		UResScannerProxy* ScannerProxy = NewObject<UResScannerProxy>();
-		ScannerProxy->Init();
+		ScannerProxy->AddToRoot();
 		ScannerProxy->SetScannerConfig(*ScannerConfig);
+		ScannerProxy->Init();
 		ScannerProxy->DoScan();
 		const FMatchedResult& Result = ScannerProxy->GetScanResult();
 		FString OutString;

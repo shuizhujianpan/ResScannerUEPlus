@@ -47,7 +47,15 @@ public class ResScanner : ModuleRules
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
-		
+
+		if (Target.bBuildEditor)
+		{
+			PublicDependencyModuleNames.AddRange(new string[]
+			{
+				"BlueprintGraph",
+				"UnrealEd"
+			});
+		}
 		
 		DynamicallyLoadedModuleNames.AddRange(
 			new string[]

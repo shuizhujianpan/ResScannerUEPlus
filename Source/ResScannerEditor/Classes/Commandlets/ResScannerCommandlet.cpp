@@ -105,8 +105,8 @@ int32 UResScannerCommandlet::Main(const FString& Params)
 		ScannerConfig.bByGlobalScanFilters = ScannerConfig.bByGlobalScanFilters || bIsFileCheck;
 		ScannerConfig.GlobalScanFilters.Assets.Append(InAssets);
 		UResScannerProxy* ScannerProxy = NewObject<UResScannerProxy>();
-		ScannerProxy->Init();
 		ScannerProxy->SetScannerConfig(ScannerConfig);
+		ScannerProxy->Init();
 		ScannerProxy->DoScan();
 		const FMatchedResult& Result = ScannerProxy->GetScanResult();
 		FString OutString;

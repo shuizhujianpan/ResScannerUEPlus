@@ -2,6 +2,7 @@
 
 
 #include "FlibOperationHelper.h"
+#include "GameFramework/WorldSettings.h"
 
 TSubclassOf<class AGameModeBase> UFlibOperationHelper::GetMapGameModeClass(UWorld* World)
 {
