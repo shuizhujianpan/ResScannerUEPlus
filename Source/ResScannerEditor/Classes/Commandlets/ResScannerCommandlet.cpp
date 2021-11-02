@@ -105,12 +105,13 @@ int32 UResScannerCommandlet::Main(const FString& Params)
 		ScannerConfig.bByGlobalScanFilters = ScannerConfig.bByGlobalScanFilters || bIsFileCheck;
 		ScannerConfig.GlobalScanFilters.Assets.Append(InAssets);
 		UResScannerProxy* ScannerProxy = NewObject<UResScannerProxy>();
+		ScannerProxy->AddToRoot();
 		ScannerProxy->SetScannerConfig(ScannerConfig);
 		ScannerProxy->Init();
 		ScannerProxy->DoScan();
 		const FMatchedResult& Result = ScannerProxy->GetScanResult();
-		FString OutString;
-		TemplateHelper::TSerializeStructAsJsonString(Result,OutString);
+		FString OutString = ScannerProxy->SerializeResult();
+		
 		UE_LOG(LogResScannerCommandlet, Display, TEXT("\nAsset Scan Result:\n%s"), *OutString);
 		if(Result.MatchedAssets.Num())
 		{

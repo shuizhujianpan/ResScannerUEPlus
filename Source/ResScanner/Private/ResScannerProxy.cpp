@@ -143,19 +143,20 @@ void UResScannerProxy::DoScan()
 		TemplateHelper::TSerializeStructAsJsonString(*ScannerConfig,SerializedJsonStr);
 		
 		FString SavePath = FPaths::Combine(SaveBasePath,FString::Printf(TEXT("%s_config.json"),*Name));
-		if(FFileHelper::SaveStringToFile(SerializedJsonStr, *SavePath) && !IsRunningCommandlet())
+		if(FFileHelper::SaveStringToFile(SerializedJsonStr, *SavePath,FFileHelper::EEncodingOptions::ForceUTF8) && !IsRunningCommandlet())
 		{
 			FText Msg = LOCTEXT("SavedScanConfigMag", "Successd to Export the Config.");
 			UFlibAssetParseHelper::CreateSaveFileNotify(Msg,SavePath,SNotificationItem::CS_Success);
 		}
 	}
+	FString ResultSavePath = FPaths::Combine(SaveBasePath,FString::Printf(TEXT("%s_result.json"),*Name));
+	IFileManager::Get().Delete(*ResultSavePath);
+	
 	// serialize matched assets
 	if(GetScannerConfig()->bSaveResult && MatchedResult.MatchedAssets.Num())
 	{
-		FString SerializedJsonStr;
-		TemplateHelper::TSerializeStructAsJsonString(MatchedResult,SerializedJsonStr);
-		FString SavePath = FPaths::Combine(SaveBasePath,FString::Printf(TEXT("%s_result.json"),*Name));
-		if(FFileHelper::SaveStringToFile(SerializedJsonStr, *SavePath) && !IsRunningCommandlet())
+		FString SerializedJsonStr = SerializeResult();
+		if(FFileHelper::SaveStringToFile(SerializedJsonStr, *ResultSavePath,FFileHelper::EEncodingOptions::ForceUTF8) && !IsRunningCommandlet())
 		{
 			FText Msg = LOCTEXT("SavedScanResultMag", "Successd to Export the scan result.");
 			if(::IsRunningCommandlet())
@@ -164,7 +165,7 @@ void UResScannerProxy::DoScan()
 			}
 			else
 			{
-				UFlibAssetParseHelper::CreateSaveFileNotify(Msg,SavePath,SNotificationItem::CS_Success);
+				UFlibAssetParseHelper::CreateSaveFileNotify(Msg,ResultSavePath,SNotificationItem::CS_Success);
 			}
 		}
 	}
@@ -177,6 +178,55 @@ void UResScannerProxy::SetScannerConfig(FScannerConfig InConfig)
 		ScannerConfig = MakeShareable(new FScannerConfig);
 	}
 	*ScannerConfig = InConfig;
+}
+
+FString UResScannerProxy::SerializeResult()
+{
+	FString OutString;
+	if(GetScannerConfig()->bSavaeLiteResult)
+	{
+		OutString = SerializeLiteReqult();
+	}
+	else
+	{
+		TemplateHelper::TSerializeStructAsJsonString(GetScanResult(),OutString);
+	}
+	return OutString;
+}
+
+FString UResScannerProxy::SerializeLiteReqult()
+{
+	FString Result;
+	bool bRecordCommiter = GetScannerConfig()->GitChecker.bGitCheck && GetScannerConfig()->GitChecker.bRecordCommiter;
+	for(const auto& RuleMatchedInfo:MatchedResult.MatchedAssets)
+	{
+		if(RuleMatchedInfo.AssetPackageNames.Num() || RuleMatchedInfo.AssetsCommiter.Num())
+		{
+			Result += FString::Printf(TEXT("RuleName:%s (%s)\n"),*RuleMatchedInfo.RuleName,*RuleMatchedInfo.RuleDescribe);
+		}
+		
+		if(bRecordCommiter)
+		{
+			if(RuleMatchedInfo.AssetsCommiter.Num())
+			{
+				for(const auto& AssetCommiter:RuleMatchedInfo.AssetsCommiter)
+				{
+					Result += FString::Printf(TEXT("%s, %s\n"),*AssetCommiter.File,*AssetCommiter.Commiter);
+				}
+			}
+		}
+		else
+		{
+			if(RuleMatchedInfo.AssetPackageNames.Num())
+			{
+				for(const auto& AssetPackageName:RuleMatchedInfo.AssetPackageNames)
+				{
+					Result += FString::Printf(TEXT("%s\n"),*AssetPackageName);
+				}
+			}
+		}
+	}
+	return Result;
 }
 
 void UResScannerProxy::PostProcessorMatchRule(const FScannerMatchRule& Rule,const FRuleMatchedInfo& RuleMatchedInfo)

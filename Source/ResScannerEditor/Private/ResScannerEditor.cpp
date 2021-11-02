@@ -26,6 +26,12 @@ void FResScannerEditorModule::StartupModule()
 	FResScannerStyle::Initialize();
 	FResScannerStyle::ReloadTextures();
 	FResScannerCommands::Register();
+
+	{
+		FPropertyEditorModule& PropertyEditorModule = FModuleManager::GetModuleChecked<FPropertyEditorModule>("PropertyEditor");
+		PropertyEditorModule.RegisterCustomPropertyTypeLayout("PropertyMatchMapping", FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FCustomPropertyMatchMappingDetails::MakeInstance));
+	}
+	
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
 	PluginCommands = MakeShareable(new FUICommandList);
 	PluginCommands->MapAction(
@@ -47,12 +53,7 @@ void FResScannerEditorModule::StartupModule()
 		LevelEditorModule.GetToolBarExtensibilityManager()->AddExtender(ToolbarExtender);
 	}
 
-	{
-#if WITH_EDITOR
-		FPropertyEditorModule& PropertyEditorModule = FModuleManager::GetModuleChecked<FPropertyEditorModule>("PropertyEditor");
-		PropertyEditorModule.RegisterCustomPropertyTypeLayout("PropertyMatchMapping", FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FCustomPropertyMatchMappingDetails::MakeInstance));
-#endif
-	}
+
 	MissionNotifyProay = NewObject<UScannerNotificationProxy>();
 	MissionNotifyProay->AddToRoot();
 }

@@ -17,8 +17,7 @@ TArray<FScannerMatchRule> FScannerConfig::GetTableRules() const
 	TArray<FScannerMatchRule> result;
 	if(ImportRulesTable.IsValid())
 	{
-		ImportRulesTable.ToSoftObjectPath().TryLoad();
-		UDataTable* RulesTable = ImportRulesTable.Get();
+		UDataTable* RulesTable = Cast<UDataTable>(ImportRulesTable.TryLoad());
 		if(RulesTable)
 		{
 			TArray<FName> RowNames = RulesTable->GetRowNames();

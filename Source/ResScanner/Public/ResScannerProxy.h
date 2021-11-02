@@ -27,7 +27,11 @@ public:
     virtual TMap<FString,TSharedPtr<IMatchOperator>>& GetMatchOperators(){return MatchOperators;}
     virtual FMatchedResult& GetScanResult(){return MatchedResult;}
 
+    FString SerializeResult();
+    
+
 protected:
+    FString SerializeLiteReqult();
     virtual void PostProcessorMatchRule(const FScannerMatchRule& Rule,const FRuleMatchedInfo& RuleMatchedInfo);    
 private:
     FMatchedResult MatchedResult;

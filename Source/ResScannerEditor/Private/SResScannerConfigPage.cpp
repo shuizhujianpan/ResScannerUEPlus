@@ -162,7 +162,7 @@ void SResScannerConfigPage::ExportConfig()const
 	{
 		FString SerializedJsonStr;
 		TemplateHelper::TSerializeStructAsJsonString(*ScannerConfig,SerializedJsonStr);
-		FFileHelper::SaveStringToFile(SerializedJsonStr, *SaveToFile);
+		FFileHelper::SaveStringToFile(SerializedJsonStr, *SaveToFile,FFileHelper::EEncodingOptions::ForceUTF8);
 	}
 }
 
@@ -187,8 +187,7 @@ void SResScannerConfigPage::DoScanWork()const
 		ScannerProxy->Init();
 		ScannerProxy->DoScan();
 		const FMatchedResult& Result = ScannerProxy->GetScanResult();
-		FString OutString;
-		TemplateHelper::TSerializeStructAsJsonString(Result,OutString);
+		FString OutString = ScannerProxy->SerializeResult();
 		ContentsWidget->SetContent(OutString);
 		ContentsWidget->SetExpanded(true);
 		ContentsWidget->SetVisibility(EVisibility::Visible);
@@ -202,7 +201,7 @@ void SResScannerConfigPage::DoScanWork()const
 		FString CurrentConfig;
 		TemplateHelper::TSerializeStructAsJsonString(*ScannerConfig,CurrentConfig);
 		FString SaveConfigTo = FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectSavedDir(),TEXT("ResScanner"),TEXT("ScannerConfig.json")));
-		FFileHelper::SaveStringToFile(CurrentConfig,*SaveConfigTo);
+		FFileHelper::SaveStringToFile(CurrentConfig,*SaveConfigTo,FFileHelper::EEncodingOptions::ForceUTF8);
 		FString MissionCommand = FString::Printf(TEXT("\"%s\" -run=ResScanner -config=\"%s\" %s"),*UFlibResScannerEditorHelper::GetProjectFilePath(),*SaveConfigTo,*ScannerConfig->AdditionalExecCommand);
 		UE_LOG(LogTemp,Log,TEXT("ResScanner %s Mission: %s %s"),*ScannerConfig->ConfigName,*UFlibResScannerEditorHelper::GetUECmdBinary(),*MissionCommand);
 		FResScannerEditorModule::Get().RunProcMission(UFlibResScannerEditorHelper::GetUECmdBinary(),MissionCommand,TEXT("ResScanner"));

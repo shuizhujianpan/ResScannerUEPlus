@@ -247,10 +247,13 @@ class UOperatorBase : public UObject
 {
 	GENERATED_BODY()
 public:
-	UFUNCTION(BlueprintImplementableEvent,BlueprintCallable)
+	UFUNCTION(BlueprintNativeEvent,BlueprintCallable)
 	bool Match(UObject* Object,const FString& AssetType);
-	UFUNCTION(BlueprintImplementableEvent,BlueprintCallable)
+	UFUNCTION(BlueprintNativeEvent,BlueprintCallable)
 	EMatchLogic GetMatchLogic()const;
+
+	virtual bool Match_Implementation(UObject* Object,const FString& AssetType){ return false; }
+	virtual EMatchLogic GetMatchLogic_Implementation()const { return EMatchLogic::Necessary; };
 protected:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 	EMatchLogic MatchLogic;
@@ -372,8 +375,8 @@ public:
 	
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="启用规则数据表",Category="RulesTable")
 	bool bUseRulesTable = false;
-	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="规则数据表",Category="RulesTable", meta=(RequiredAssetDataTags = "RowStructure=ScannerMatchRule",EditCondition="bUseRulesTable"))
-	TSoftObjectPtr<class UDataTable> ImportRulesTable;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="规则数据表",Category="RulesTable", meta=(AllowedClasses="DataTable",RequiredAssetDataTags = "RowStructure=ScannerMatchRule",EditCondition="bUseRulesTable"))
+	FSoftObjectPath ImportRulesTable;
 	
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="规则列表",Category="Rules")
 	TArray<FScannerMatchRule> ScannerRules;
@@ -382,6 +385,8 @@ public:
 	bool bSaveConfig = true;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="存储扫描结果",Category="Save")
 	bool bSaveResult = true;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="简洁扫描结果",Category="Save",meta=(EditCondition="bSaveResult"))
+	bool bSavaeLiteResult = true;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="存储路径",Category="Save")
 	FDirectoryPath SavePath;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="独立运行模式",Category="Advanced")
