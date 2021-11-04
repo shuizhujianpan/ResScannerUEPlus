@@ -43,6 +43,11 @@ void UResScannerProxy::ScanSingleRule(const TArray<FAssetData>& GlobalAssets,con
 		UE_LOG(LogResScannerProxy,Warning,TEXT("rule %s not contain any rules!"),*ScannerRule.RuleName);
 		return;
 	}
+	UE_LOG(LogResScannerProxy,Display,TEXT("RuleName %s is Scanning."),*ScannerRule.RuleName);
+	FString RuleConfig;
+	TemplateHelper::TSerializeStructAsJsonString(ScannerRule,RuleConfig);
+	UE_LOG(LogResScannerProxy,Display,TEXT("RuleName %s is Scanning. config:\n%s"),*ScannerRule.RuleName,*RuleConfig);
+	
 	TArray<FAssetData> FilterAssets;
 	if(GetScannerConfig()->bByGlobalScanFilters || GetScannerConfig()->GitChecker.bGitCheck)
 	{
@@ -107,7 +112,7 @@ void UResScannerProxy::DoScan()
 		}
 		else
 		{
-			UE_LOG(LogTemp,Log,TEXT("%s is not a valid git repo."),*OutRepoDir);
+			UE_LOG(LogResScannerProxy,Display,TEXT("%s is not a valid git repo."),*OutRepoDir);
 		}
 	}
 	if(GetScannerConfig()->bUseRulesTable)
@@ -185,7 +190,7 @@ FString UResScannerProxy::SerializeResult()
 	FString OutString;
 	if(GetScannerConfig()->bSavaeLiteResult)
 	{
-		OutString = SerializeLiteReqult();
+		OutString = SerializeLiteResult();
 	}
 	else
 	{
@@ -194,7 +199,7 @@ FString UResScannerProxy::SerializeResult()
 	return OutString;
 }
 
-FString UResScannerProxy::SerializeLiteReqult()
+FString UResScannerProxy::SerializeLiteResult()
 {
 	FString Result;
 	bool bRecordCommiter = GetScannerConfig()->GitChecker.bGitCheck && GetScannerConfig()->GitChecker.bRecordCommiter;
@@ -202,7 +207,8 @@ FString UResScannerProxy::SerializeLiteReqult()
 	{
 		if(RuleMatchedInfo.AssetPackageNames.Num() || RuleMatchedInfo.AssetsCommiter.Num())
 		{
-			Result += FString::Printf(TEXT("RuleName:%s (%s)\n"),*RuleMatchedInfo.RuleName,*RuleMatchedInfo.RuleDescribe);
+			FString Describle = RuleMatchedInfo.RuleDescribe.IsEmpty() ? TEXT(""):FString::Printf(TEXT("(%s)"),*RuleMatchedInfo.RuleDescribe);
+			Result += FString::Printf(TEXT("RuleName:%s (%d) %s\n"),*RuleMatchedInfo.RuleName,RuleMatchedInfo.AssetPackageNames.Num(),*Describle);
 		}
 		
 		if(bRecordCommiter)
@@ -211,7 +217,7 @@ FString UResScannerProxy::SerializeLiteReqult()
 			{
 				for(const auto& AssetCommiter:RuleMatchedInfo.AssetsCommiter)
 				{
-					Result += FString::Printf(TEXT("%s, %s\n"),*AssetCommiter.File,*AssetCommiter.Commiter);
+					Result += FString::Printf(TEXT("\t%s, %s\n"),*AssetCommiter.File,*AssetCommiter.Commiter);
 				}
 			}
 		}
@@ -221,7 +227,7 @@ FString UResScannerProxy::SerializeLiteReqult()
 			{
 				for(const auto& AssetPackageName:RuleMatchedInfo.AssetPackageNames)
 				{
-					Result += FString::Printf(TEXT("%s\n"),*AssetPackageName);
+					Result += FString::Printf(TEXT("\t%s\n"),*AssetPackageName);
 				}
 			}
 		}

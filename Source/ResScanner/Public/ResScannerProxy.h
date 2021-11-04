@@ -31,7 +31,7 @@ public:
     
 
 protected:
-    FString SerializeLiteReqult();
+    FString SerializeLiteResult();
     virtual void PostProcessorMatchRule(const FScannerMatchRule& Rule,const FRuleMatchedInfo& RuleMatchedInfo);    
 private:
     FMatchedResult MatchedResult;
