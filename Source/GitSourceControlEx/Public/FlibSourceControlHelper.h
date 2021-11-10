@@ -29,6 +29,12 @@ public:
 		static bool DiffVersion(const FString& InGitBinaey, const FString& InRepoRoot, const FString& InBeginCommitHash, const FString& InEndCommitHash, TArray<FString>& OutResault, TArray<FString>& OutErrorMessages);
 	UFUNCTION(BlueprintCallable, Category = "GitSourceControlEx|Flib")
 		static bool DiffVersionByGlobalGit(const FString& InRepoRoot, const FString& InBeginCommitHash, const FString& InEndCommitHash, TArray<FString>& OutResault);
+
+	UFUNCTION(BlueprintCallable, Category = "GitSourceControlEx|Flib")
+		static bool GitStatus(const FString& InGitBinaey, const FString& InRepoRoot, TArray<FString>& OutResault,const FString& DiffFilter = TEXT("ACMR"));
+	UFUNCTION(BlueprintCallable, Category = "GitSourceControlEx|Flib")
+		static bool GitStatusByGlobalGit(const FString& InRepoRoot,  TArray<FString>& OutResault,const FString& DiffFilter = TEXT("ACMR"));
+	
 	UFUNCTION(BlueprintCallable, Category = "GitSourceControlEx|Flib")
 		static bool GitLog(const FString& InGitBinaey, const FString& InRepoRoot, TArray<FGitCommitInfo>& OutCommitInfo);
 

@@ -3,12 +3,13 @@
 
 namespace ReplacePropertyHelper
 {
-	static bool HasPrroperty(UStruct* Field,const FString& FieldName)
+	static bool HasPrroperty(UStruct* Field,const FString& FieldName,FProperty*& Property)
 	{
 		for(TFieldIterator<FProperty> PropertyIter(Field);PropertyIter;++PropertyIter)
 		{
 			if(PropertyIter->GetName().Equals(FieldName,ESearchCase::IgnoreCase))
 			{
+				Property = *PropertyIter;
 				return true;
 			}
 		}
@@ -32,7 +33,8 @@ namespace ReplacePropertyHelper
 				if(BreakedDot.Num())
 				{
 					TSharedPtr<FJsonObject> JsonObject = DeserializeJsonObject;
-					if(ReplacePropertyHelper::HasPrroperty(T::StaticStruct(),BreakedDot[0]))
+					FProperty* Property;
+					if(ReplacePropertyHelper::HasPrroperty(T::StaticStruct(),BreakedDot[0],Property))
 					{
 						for(int32 index=0;index<BreakedDot.Num()-1;++index)
 						{
@@ -71,4 +73,20 @@ namespace ReplacePropertyHelper
 		}
 		return resault;
 	}
+	static TArray<FString> GetArrayElementByTokens(const FString& PropertyName, const TMap<FString, FString>& ParamsMap)
+	{
+		TArray<FString> Keys;
+		ParamsMap.GetKeys(Keys);
+		TArray<FString> ChildValues;
+		for(const auto& Key:Keys)
+		{
+			if(Key.Equals(PropertyName,ESearchCase::IgnoreCase))
+			{
+				FString Value = *ParamsMap.Find(Key);
+				Value.ParseIntoArray(ChildValues,TEXT(","));
+				break;
+			}
+		}
+		return ChildValues;
+	};
 }

@@ -283,9 +283,12 @@ public:
 	// 是否启用当前规则
 	UPROPERTY(EditAnywhere, BlueprintReadWrite,DisplayName="启用当前规则",Category = "Filter")
 	bool bEnableRule = true;
+
 	// 规则的重要程度（优先级）
-	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="规则的重要程度（优先级）",Category = "Filter")
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="规则的重要程度(优先级)",Category = "Filter")
 	ERulePriority Priority = ERulePriority::GENERAL;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="必须匹配规则中的Filter目录(全局资源)",Category="Filter")
+	bool bGlobalAssetMustMatchFilter = true;
 	// 扫描资源路径
 	UPROPERTY(EditAnywhere, BlueprintReadWrite,DisplayName="扫描资源路径",Category = "Filter",meta = (RelativeToGameContentDir, LongPackageName))
 	TArray<FDirectoryPath> ScanFilters;
@@ -336,10 +339,15 @@ public:
 	bool bRecordCommiter = false;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="Git仓库地址",Category="GitChecker",meta=(EditCondition="bGitCheck"))
 	FDirectoryPath RepoDir;
-	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="检查开始的Commit",Category="GitChecker",meta=(EditCondition="bGitCheck"))
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="Git提交记录比对",Category="GitChecker",meta=(EditCondition="bGitCheck"))
+	bool bDiffCommit = true;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="检查开始的Commit",Category="GitChecker|DiffCommit",meta=(EditCondition="bGitCheck && bDiffCommit"))
 	FString BeginCommitHash = TEXT("HEAD~");
-	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="检查结束的Commit",Category="GitChecker",meta=(EditCondition="bGitCheck"))
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="检查结束的Commit",Category="GitChecker|DiffCommit",meta=(EditCondition="bGitCheck && bDiffCommit"))
 	FString EndCommitHash = TEXT("HEAD");
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="检查待提交文件",Category="GitChecker",meta=(EditCondition="bGitCheck && !bDiffCommit"))
+	bool bUncommitFiles = false;
+	
 	// UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="记录文件的提交人",Category="GitChecker",meta=(EditCondition="bGitCheck"))
 	// bool bRecordCommmiter = false;
 	
@@ -372,6 +380,10 @@ public:
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="Git仓库扫描配置",Category="Global",meta=(EditCondition="bByGlobalScanFilters"))
 	FGitChecker GitChecker;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="开启规则白名单",Category="WhiteList")
+	bool bRuleWhiteList = false;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="规则白名单（名单中的规则才会被执行）",Category="WhiteList",meta=(EditCondition="bRuleWhiteList"))
+	TArray<int32> RuleWhileListIDs;
 	
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="启用规则数据表",Category="RulesTable")
 	bool bUseRulesTable = false;

@@ -36,8 +36,27 @@ bool UFlibSourceControlHelper::DiffVersionByGlobalGit(const FString& InRepoRoot,
 	return DiffVersion(TEXT("git.exe"),InRepoRoot,InBeginCommitHash,InEndCommitHash,OutResault,OutErrorMessages);
 }
 
+bool UFlibSourceControlHelper::GitStatus(const FString& InGitBinaey, const FString& InRepoRoot,
+	TArray<FString>& OutResault, const FString& DiffFilter)
+{
+	TArray<FString> OutErrorMessages;
+	TArray<FString> Params{
+		TEXT("--cached"),
+		TEXT("--name-only"),
+		TEXT("--relative"),
+		FString::Printf(TEXT("--diff-filter=%s"),*DiffFilter)
+	};
+	return UFlibSourceControlHelper::RunGitCommand(FString(TEXT("diff")), InGitBinaey, InRepoRoot, Params, OutResault, OutErrorMessages);
+}
+
+bool UFlibSourceControlHelper::GitStatusByGlobalGit(const FString& InRepoRoot, TArray<FString>& OutResault,
+                                                    const FString& DiffFilter)
+{
+	return UFlibSourceControlHelper::GitStatus(TEXT("git"),InRepoRoot,OutResault,DiffFilter);
+}
+
 bool UFlibSourceControlHelper::GetFileLastCommitByGlobalGit(const FString& InRepositoryRoot, const FString& InFile,
-	FGitSourceControlRevisionData& OutHistory)
+                                                            FGitSourceControlRevisionData& OutHistory)
 {
 	TArray<FString> OutErrorMessages;
 	return GetFileLastCommit(TEXT("git.exe"),InRepositoryRoot,InFile,false,OutErrorMessages,OutHistory);

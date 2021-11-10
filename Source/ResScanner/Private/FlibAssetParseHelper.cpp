@@ -122,7 +122,7 @@ TArray<FAssetData> UFlibAssetParseHelper::GetAssetsByObjectPath(const TArray<FSo
 }
 
 TArray<FAssetData> UFlibAssetParseHelper::GetAssetsWithCachedByTypes(const TArray<FAssetData>& CachedAssets,
-	const TArray<UClass*>& AssetTypes,bool bRecursiveClasses)
+	const TArray<UClass*>& AssetTypes,bool bUseFilter,const TArray<FDirectoryPath>& FilterDirectorys,bool bRecursiveClasses)
 {
 	TArray<FString> Types;
 	for(auto& Type:AssetTypes)
@@ -136,11 +136,11 @@ TArray<FAssetData> UFlibAssetParseHelper::GetAssetsWithCachedByTypes(const TArra
 	{
 		UE_LOG(LogFlibAssetParseHelper,Error,TEXT("GetAssetsWithCachedByTypes Types is Emppty,Search all asset types."));
 	}
-	return UFlibAssetParseHelper::GetAssetsWithCachedByTypes(CachedAssets,Types,bRecursiveClasses);
+	return UFlibAssetParseHelper::GetAssetsWithCachedByTypes(CachedAssets,Types,bUseFilter,FilterDirectorys,bRecursiveClasses);
 }
 
 TArray<FAssetData> UFlibAssetParseHelper::GetAssetsWithCachedByTypes(const TArray<FAssetData>& CachedAssets,
-                                                                     const TArray<FString>& AssetTypes,bool bRecursiveClasses)
+                                                                     const TArray<FString>& AssetTypes,bool bUseFilter,const TArray<FDirectoryPath>& FilterDirectorys,bool bRecursiveClasses)
 {
 	TArray<FAssetData> result;
 	for(const auto& CachedAsset:CachedAssets)
@@ -158,7 +158,21 @@ TArray<FAssetData> UFlibAssetParseHelper::GetAssetsWithCachedByTypes(const TArra
 			}
 			if(CachedAsset.AssetClass.ToString().Equals(Type) && bCheckChild)
 			{
-				result.AddUnique(CachedAsset);
+				if(bUseFilter)
+				{
+					for(const auto& Filter:FilterDirectorys)
+					{
+						if(CachedAsset.PackagePath.ToString().StartsWith(Filter.Path))
+						{
+							result.AddUnique(CachedAsset);
+							break;
+						}
+					}
+				}
+				else
+				{
+					result.AddUnique(CachedAsset);
+				}
 				break;
 			}
 		}
@@ -255,10 +269,81 @@ FString UFlibAssetParseHelper::ReplaceMarkPath(const FString& Src)
 	return ReplaceProjectDir(Src);
 }
 
+TArray<FSoftObjectPath> ParserGitFilesToObjectPaths(TArray<FString> GitCommitFiles)
+{
+	TArray<FSoftObjectPath> ResultAssets;
+	for(auto& File:GitCommitFiles)
+	{
+		FString Left,Right;
+		File.Split(TEXT("."),&Left,&Right,ESearchCase::CaseSensitive,ESearchDir::FromEnd);
+		FString FileName;
+		{
+			FString Path;
+			Left.Split(TEXT("/"),&Path,&FileName,ESearchCase::CaseSensitive,ESearchDir::FromEnd);
+		}
+					
+		FString AssetPath = FString::Printf(TEXT("/Game/%s.%s"),*Left,*FileName);
+		FSoftObjectPath CurrentAsset(AssetPath);
+		if(CurrentAsset.IsValid())
+		{
+			ResultAssets.Add(CurrentAsset);
+		}
+	}
+	return ResultAssets;
+}
+
 TArray<FSoftObjectPath> UFlibAssetParseHelper::GetAssetsByGitChecker(const FGitChecker& GitChecker,
 	const FString& GitBinaryOpt)
 {
-	return UFlibAssetParseHelper::GetAssetsByGitCommitHash(GitChecker.GetRepoDir(),GitChecker.BeginCommitHash,GitChecker.EndCommitHash,GitBinaryOpt);
+	TArray<FSoftObjectPath> ResultAssets;
+	if(GitChecker.bGitCheck && GitChecker.bDiffCommit)
+	{
+		ResultAssets.Append(UFlibAssetParseHelper::GetAssetsByGitCommitHash(GitChecker.GetRepoDir(),GitChecker.BeginCommitHash,GitChecker.EndCommitHash,GitBinaryOpt));
+	}
+	if(GitChecker.bGitCheck && GitChecker.bUncommitFiles)
+	{
+		ResultAssets.Append(UFlibAssetParseHelper::GetAssetsByGitStatus(GitChecker.GetRepoDir(),GitBinaryOpt));
+	}
+	return ResultAssets;
+}
+
+
+TArray<FSoftObjectPath> UFlibAssetParseHelper::GetAssetsByGitStatus(const FString& RepoDir,
+	const FString& GitBinaryOpt)
+{
+	auto IsUasset = [](const FString& File)->bool
+	{
+		TArray<FString> Extersions = {
+			FPackageName::GetAssetPackageExtension(),
+			FPackageName::GetMapPackageExtension()
+		};
+		bool bResult = false;
+		for(const auto& Extersion:Extersions)
+		{
+			if(File.EndsWith(Extersion))
+			{
+				bResult = true;
+				break;
+			}
+		}
+		return bResult;
+	};
+	
+	TArray<FSoftObjectPath> ResultAssets;
+	TArray<FString> GitUnCommitFiles;
+	if(UFlibSourceControlHelper::GitStatus(GitBinaryOpt,RepoDir,GitUnCommitFiles))
+	{
+		TArray<FString> Assets;
+		for(const auto& UnCommitFile:GitUnCommitFiles)
+		{
+			if(IsUasset(UnCommitFile))
+			{
+				Assets.AddUnique(UnCommitFile);
+			}
+		}
+		ResultAssets.Append(ParserGitFilesToObjectPaths(Assets));
+	}
+	return ResultAssets;
 }
 
 TArray<FSoftObjectPath> UFlibAssetParseHelper::GetAssetsByGitCommitHash(const FString& RepoDir,
@@ -269,23 +354,7 @@ TArray<FSoftObjectPath> UFlibAssetParseHelper::GetAssetsByGitCommitHash(const FS
 	TArray<FString> OutErrorMessages;
 	if(UFlibSourceControlHelper::DiffVersion(GitBinaryOpt,RepoDir,BeginHash,EndHand,GitCommitFiles,OutErrorMessages))
 	{
-		for(auto& File:GitCommitFiles)
-		{
-			FString Left,Right;
-			File.Split(TEXT("."),&Left,&Right,ESearchCase::CaseSensitive,ESearchDir::FromEnd);
-			FString FileName;
-			{
-				FString Path;
-				Left.Split(TEXT("/"),&Path,&FileName,ESearchCase::CaseSensitive,ESearchDir::FromEnd);
-			}
-					
-			FString AssetPath = FString::Printf(TEXT("/Game/%s.%s"),*Left,*FileName);
-			FSoftObjectPath CurrentAsset(AssetPath);
-			if(CurrentAsset.IsValid())
-			{
-				ResultAssets.Add(CurrentAsset);
-			}
-		}
+		ResultAssets.Append(ParserGitFilesToObjectPaths(GitCommitFiles));
 	}
 	return ResultAssets;
 }
@@ -303,14 +372,17 @@ void UFlibAssetParseHelper::CheckMatchedAssetsCommiter(FMatchedResult& MatchedRe
 			{
 				RealFile.RemoveFromStart(RepoDir);
 				FGitSourceControlRevisionData Data;
+				FFileCommiter FileCommiter;
 				if(UFlibSourceControlHelper::GetFileLastCommitByGlobalGit(RepoDir,RealFile,Data))
 				{
-					FFileCommiter FileCommiter;
 					FileCommiter.File = AssetPackageName;
 					FileCommiter.Commiter = Data.UserName;
 					MatchedInfo.AssetsCommiter.Add(FileCommiter);
 				}
-			
+				else
+				{
+					FileCommiter.File = AssetPackageName;
+				}
 			}
 		}
 	}

@@ -51,7 +51,7 @@ void UResScannerProxy::ScanSingleRule(const TArray<FAssetData>& GlobalAssets,con
 	TArray<FAssetData> FilterAssets;
 	if(GetScannerConfig()->bByGlobalScanFilters || GetScannerConfig()->GitChecker.bGitCheck)
 	{
-		FilterAssets = UFlibAssetParseHelper::GetAssetsWithCachedByTypes(GlobalAssets,TArray<UClass*>{ScannerRule.ScanAssetType},ScannerRule.RecursiveClasses);
+		FilterAssets = UFlibAssetParseHelper::GetAssetsWithCachedByTypes(GlobalAssets,TArray<UClass*>{ScannerRule.ScanAssetType},ScannerRule.bGlobalAssetMustMatchFilter,ScannerRule.ScanFilters,ScannerRule.RecursiveClasses);
 	}
 	if(!GetScannerConfig()->bBlockRuleFilter)
 	{
@@ -115,18 +115,28 @@ void UResScannerProxy::DoScan()
 			UE_LOG(LogResScannerProxy,Display,TEXT("%s is not a valid git repo."),*OutRepoDir);
 		}
 	}
+
 	if(GetScannerConfig()->bUseRulesTable)
 	{
 		TArray<FScannerMatchRule> ImportRules = GetScannerConfig()->GetTableRules();
+		
 		for(int32 RuleID = 0;RuleID < ImportRules.Num();++RuleID)
 		{
-			ScanSingleRule(GlobalAssets,ImportRules[RuleID],RuleID);
+			bool bCheck = GetScannerConfig()->bRuleWhiteList ? GetScannerConfig()->RuleWhileListIDs.Contains(RuleID) : true;
+			if(bCheck)
+			{
+				ScanSingleRule(GlobalAssets,ImportRules[RuleID],RuleID);
+			}
 		}
 	}
 	
 	for(int32 RuleID = 0;RuleID < GetScannerConfig()->ScannerRules.Num();++RuleID)
 	{
-		ScanSingleRule(GlobalAssets,GetScannerConfig()->ScannerRules[RuleID],RuleID);
+		bool bCheck = GetScannerConfig()->bRuleWhiteList ? GetScannerConfig()->RuleWhileListIDs.Contains(RuleID) : true;
+		if(bCheck)
+		{
+			ScanSingleRule(GlobalAssets,GetScannerConfig()->ScannerRules[RuleID],RuleID);
+		}
 	}
 
 	FString Name = GetScannerConfig()->ConfigName;
@@ -205,10 +215,11 @@ FString UResScannerProxy::SerializeLiteResult()
 	bool bRecordCommiter = GetScannerConfig()->GitChecker.bGitCheck && GetScannerConfig()->GitChecker.bRecordCommiter;
 	for(const auto& RuleMatchedInfo:MatchedResult.MatchedAssets)
 	{
+		Result += TEXT("-------------------------------------------\n");
 		if(RuleMatchedInfo.AssetPackageNames.Num() || RuleMatchedInfo.AssetsCommiter.Num())
 		{
 			FString Describle = RuleMatchedInfo.RuleDescribe.IsEmpty() ? TEXT(""):FString::Printf(TEXT("(%s)"),*RuleMatchedInfo.RuleDescribe);
-			Result += FString::Printf(TEXT("RuleName:%s (%d) %s\n"),*RuleMatchedInfo.RuleName,RuleMatchedInfo.AssetPackageNames.Num(),*Describle);
+			Result += FString::Printf(TEXT("规则名: %s (%d) %s\n"),*RuleMatchedInfo.RuleName,RuleMatchedInfo.AssetPackageNames.Num(),*Describle);
 		}
 		
 		if(bRecordCommiter)
@@ -231,6 +242,7 @@ FString UResScannerProxy::SerializeLiteResult()
 				}
 			}
 		}
+		Result += TEXT("-------------------------------------------\n");
 	}
 	return Result;
 }

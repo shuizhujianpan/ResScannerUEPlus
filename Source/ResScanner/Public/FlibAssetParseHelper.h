@@ -32,8 +32,8 @@ public:
 	static TArray<FAssetData> GetAssetsByFilters(const TArray<FString>& AssetTypes,const TArray<FDirectoryPath>& FilterDirectorys, bool bRecursiveClasses=true);
 	static TArray<FAssetData> GetAssetsByFilters(const TArray<FString>& AssetTypes,const TArray<FString>& FilterPaths, bool bRecursiveClasses=true);
 	static TArray<FAssetData> GetAssetsByObjectPath(const TArray<FSoftObjectPath>& SoftObjectPaths);
-	static TArray<FAssetData> GetAssetsWithCachedByTypes(const TArray<FAssetData>& CachedAssets, const TArray<UClass*>& AssetTypes,bool bRecursiveClasses = true);
-	static TArray<FAssetData> GetAssetsWithCachedByTypes(const TArray<FAssetData>& CachedAssets, const TArray<FString>& AssetTypes,bool bRecursiveClasses = true);
+	static TArray<FAssetData> GetAssetsWithCachedByTypes(const TArray<FAssetData>& CachedAssets, const TArray<UClass*>& AssetTypes,bool bUseFilter,const TArray<FDirectoryPath>& FilterDirectorys,bool bRecursiveClasses = true);
+	static TArray<FAssetData> GetAssetsWithCachedByTypes(const TArray<FAssetData>& CachedAssets, const TArray<FString>& AssetTypes,bool bUseFilter,const TArray<FDirectoryPath>& FilterDirectorys,bool bRecursiveClasses = true);
 	static class IAssetRegistry& GetAssetRegistry(bool bSearchAllAssets = false);
 	static bool IsIgnoreAsset(const FAssetData& AssetData,const TArray<FAssetFilters>& IgnoreRules);
 	
@@ -42,9 +42,13 @@ public:
 
 	static TArray<FSoftObjectPath> GetAssetsByGitChecker(const FGitChecker& GitChecker,const FString& GitBinaryOpt = TEXT("git"));
 	static TArray<FSoftObjectPath> GetAssetsByGitCommitHash(const FString& RepoDir,const FString& BeginHash,const FString& EndHand,const FString& GitBinaryOpt = TEXT("git"));
+	static TArray<FSoftObjectPath> GetAssetsByGitStatus(const FString& RepoDir,const FString& GitBinaryOpt = TEXT("git"));
 	
 	static void CheckMatchedAssetsCommiter(FMatchedResult& MatchedResult, const FString& RepoDir);
 };
+
+
+
 
 struct IMatchOperator
 {

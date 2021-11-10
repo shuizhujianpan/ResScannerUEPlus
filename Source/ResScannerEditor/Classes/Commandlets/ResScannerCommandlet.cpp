@@ -9,6 +9,8 @@
 
 #include "ResScannerProxy.h"
 #include "AssetRegistryModule.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Kismet/KismetStringLibrary.h"
 #include "Misc/FileHelper.h"
 #include "Misc/CommandLine.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -101,6 +103,12 @@ int32 UResScannerCommandlet::Main(const FString& Params)
 		FScannerConfig ScannerConfig;
 		TemplateHelper::TDeserializeJsonStringAsStruct(JsonContent,ScannerConfig);
 		ReplacePropertyHelper::ReplaceProperty(ScannerConfig,TokenValues);
+		
+		// replace RuleWhileListIDs
+		for(const auto& Value:ReplacePropertyHelper::GetArrayElementByTokens(TEXT("RuleWhileListIDs"),TokenValues))
+		{
+			ScannerConfig.RuleWhileListIDs.Add(UKismetStringLibrary::Conv_StringToInt(Value));
+		}
 		
 		ScannerConfig.bByGlobalScanFilters = ScannerConfig.bByGlobalScanFilters || bIsFileCheck;
 		ScannerConfig.GlobalScanFilters.Assets.Append(InAssets);
