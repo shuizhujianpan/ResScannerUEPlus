@@ -377,12 +377,12 @@ void UFlibAssetParseHelper::CheckMatchedAssetsCommiter(FMatchedResult& MatchedRe
 				{
 					FileCommiter.File = AssetPackageName;
 					FileCommiter.Commiter = Data.UserName;
-					MatchedInfo.AssetsCommiter.Add(FileCommiter);
 				}
 				else
 				{
 					FileCommiter.File = AssetPackageName;
 				}
+				MatchedInfo.AssetsCommiter.Add(FileCommiter);
 			}
 		}
 	}
