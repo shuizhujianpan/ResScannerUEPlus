@@ -39,14 +39,18 @@ bool UFlibSourceControlHelper::DiffVersionByGlobalGit(const FString& InRepoRoot,
 bool UFlibSourceControlHelper::GitStatus(const FString& InGitBinaey, const FString& InRepoRoot,
 	TArray<FString>& OutResault, const FString& DiffFilter)
 {
+	TArray<FString> Result;
 	TArray<FString> OutErrorMessages;
 	TArray<FString> Params{
-		TEXT("--cached"),
-		TEXT("--name-only"),
-		TEXT("--relative"),
-		FString::Printf(TEXT("--diff-filter=%s"),*DiffFilter)
+		TEXT("--short")
 	};
-	return UFlibSourceControlHelper::RunGitCommand(FString(TEXT("diff")), InGitBinaey, InRepoRoot, Params, OutResault, OutErrorMessages);
+	bool bRunStatus = UFlibSourceControlHelper::RunGitCommand(FString(TEXT("status")), InGitBinaey, InRepoRoot, Params, Result, OutErrorMessages);
+	for(auto& ChangedFile:Result)
+	{
+		ChangedFile.RemoveAt(0,3);
+		OutResault.Add(ChangedFile);
+	}
+	return bRunStatus;
 }
 
 bool UFlibSourceControlHelper::GitStatusByGlobalGit(const FString& InRepoRoot, TArray<FString>& OutResault,
