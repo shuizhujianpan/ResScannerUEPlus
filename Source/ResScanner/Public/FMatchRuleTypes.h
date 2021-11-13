@@ -376,7 +376,7 @@ public:
 	FAssetFilters GlobalScanFilters;
 	// force ignore assets,don't match any rule
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="全局忽略扫描配置",Category="Global",meta=(EditCondition="bByGlobalScanFilters"))
-	TArray<FAssetFilters> GlobalIgnoreFilters;
+	FAssetFilters GlobalIgnoreFilters;
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="Git仓库扫描配置",Category="Global",meta=(EditCondition="bByGlobalScanFilters"))
 	FGitChecker GitChecker;

@@ -60,7 +60,8 @@ void UResScannerProxy::ScanSingleRule(const TArray<FAssetData>& GlobalAssets,con
 	RuleMatchedInfo.RuleName = ScannerRule.RuleName;
 	RuleMatchedInfo.RuleDescribe = ScannerRule.RuleDescribe;
 	RuleMatchedInfo.RuleID  = RuleID;
-	TArray<FAssetFilters> FinalIgnoreFilters = GetScannerConfig()->GlobalIgnoreFilters;
+	TArray<FAssetFilters> FinalIgnoreFilters;
+	FinalIgnoreFilters.Add(GetScannerConfig()->GlobalIgnoreFilters);
 	
 	FinalIgnoreFilters.Add(ScannerRule.IgnoreFilters);
 	for(const auto& Asset:FilterAssets)
