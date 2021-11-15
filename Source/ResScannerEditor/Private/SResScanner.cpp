@@ -1,5 +1,6 @@
 #include "SResScanner.h"
-
+#include "SVersionUpdaterWidget.h"
+#include "SResScannerConfigPage.h"
 // engine header
 #include "Styling/SlateTypes.h"
 #include "Widgets/Layout/SBorder.h"
@@ -25,7 +26,6 @@
 #include "HAL/PlatformFilemanager.h"
 #include "HAL/FileManager.h"
 #include "Misc/FileHelper.h"
-#include "SResScannerConfigPage.h"
 #define LOCTEXT_NAMESPACE "SResScanner"
 
 void SResScanner::Construct(const FArguments& InArgs)
@@ -40,23 +40,40 @@ void SResScanner::Construct(const FArguments& InArgs)
 			+ SScrollBox::Slot()
 			.Padding(0.0f, 10.0f, 8.0f, 0.0f)
 			[
-				SNew(SGridPanel)
-				.FillColumn(1, 1.0f)
-
-				// cook section
-				+ SGridPanel::Slot(0, 0)
-				.Padding(8.0f, 10.0f, 0.0f, 0.0f)
-				.VAlign(VAlign_Top)
+				SNew(SVerticalBox)
+				+SVerticalBox::Slot()
+				.AutoHeight()
 				[
+					SAssignNew(VersionUpdaterWidget,SVersionUpdaterWidget)
+					.ToolName(FText::FromString(TOOL_NAME))
+					.DeveloperName(FText::FromString(TEXT("lipengzha")))
+					.DeveloperWebsite(FText::FromString(TEXT("https://imzlp.com")))
+					.UpdateWebsite(FText::FromString(TEXT("https://imzlp.com/posts/11750/")))
+					.CurrentVersion(CURRENT_VERSION_ID)
+				]
+				+SVerticalBox::Slot()
+				.Padding(0,10,0,0)
+				.AutoHeight()
+				[
+					SNew(SGridPanel)
+					.FillColumn(1, 1.0f)
+
+					// cook section
+					+ SGridPanel::Slot(0, 0)
+					.Padding(8.0f, 10.0f, 0.0f, 0.0f)
+					.VAlign(VAlign_Top)
+					[
 					SNew(STextBlock)
 					.Font(FCoreStyle::GetDefaultFontStyle("Scanner", 15))
 					.Text(LOCTEXT("ResScannerSectionHeader", "Res Scanner"))
-				]
-				+ SGridPanel::Slot(1, 0)
-				.Padding(8.0f, 0.0f, 8.0f, 0.0f)
-				[
+					]
+					+ SGridPanel::Slot(1, 0)
+					.Padding(8.0f, 0.0f, 8.0f, 0.0f)
+					[
 					SNew(SResScannerConfigPage)
+					]
 				]
+
 			]
 		]
 	];
