@@ -5,16 +5,21 @@
 // engine header
 #include <complex>
 
-#include "CoreMinimal.h"
-
+#include "ReplacePropertyHelper.hpp"
 #include "ResScannerProxy.h"
+
+#include "CoreMinimal.h"
 #include "AssetRegistryModule.h"
-#include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetStringLibrary.h"
 #include "Misc/FileHelper.h"
 #include "Misc/CommandLine.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Misc/Paths.h"
+
+#define ADD_GLOBAL_FILTER TEXT("globalScanFilters.filters")
+#define ADD_GLOBAL_ASSETS TEXT("globalScanFilters.assets")
+#define ADD_GLOBAL_IGNORE_FILTER TEXT("globalIgnoreFilters.filters")
+#define ADD_GLOBAL_IGNORE_ASSETS TEXT("globalIgnoreFilters.assets")
 
 #define COOKER_CONFIG_PARAM_NAME TEXT("-config=")
 
@@ -22,10 +27,6 @@ DEFINE_LOG_CATEGORY(LogResScannerCommandlet);
 #define CONTENT_DIR TEXT("-contentdir=")
 #define FILE_CHECK TEXT("-filecheck")
 #define COMMIT_FILE_LIST TEXT("-filelist=")
-
-#define GIT_CHECK TEXT("-gitcheck")
-#define GIT_BEGIN_HASH TEXT("-gitbeginhash=")
-#define GIT_END_HASH TEXT("-gitendhash=")
 
 TArray<FSoftObjectPath> GetCommitFileListObjects(const FString& ContentDir,const FString& FileList)
 {
@@ -52,8 +53,7 @@ TArray<FSoftObjectPath> GetCommitFileListObjects(const FString& ContentDir,const
 	}
 	return result;
 }
-#include "FlibSourceControlHelper.h"
-#include "ReplacePropertyHelper.hpp"
+
 
 int32 UResScannerCommandlet::Main(const FString& Params)
 {
@@ -70,9 +70,9 @@ int32 UResScannerCommandlet::Main(const FString& Params)
 		UE_LOG(LogResScannerCommandlet, Error, TEXT("cofnig file %s not exists."), *config_path);
 		return -1;
 	}
-
+	
 	bool bIsFileCheck = FParse::Param(FCommandLine::Get(), TEXT("filecheck"));
-
+	
 	TArray<FSoftObjectPath> InAssets;
 	FString CommitFileList;
 	bool bFileListStatus = FParse::Value(*Params, *FString(COMMIT_FILE_LIST).ToLower(), CommitFileList);
@@ -109,6 +109,10 @@ int32 UResScannerCommandlet::Main(const FString& Params)
 		{
 			ScannerConfig.RuleWhileListIDs.Add(UKismetStringLibrary::Conv_StringToInt(Value));
 		}
+		ScannerConfig.GlobalScanFilters.Filters = ReplacePropertyHelper::ParserFilters(Params,ADD_GLOBAL_FILTER);
+		ScannerConfig.GlobalScanFilters.Assets = ReplacePropertyHelper::ParserAssets(Params,ADD_GLOBAL_ASSETS);
+		ScannerConfig.GlobalIgnoreFilters.Filters = ReplacePropertyHelper::ParserFilters(Params,ADD_GLOBAL_IGNORE_FILTER);
+		ScannerConfig.GlobalIgnoreFilters.Assets = ReplacePropertyHelper::ParserAssets(Params,ADD_GLOBAL_IGNORE_ASSETS);
 		
 		ScannerConfig.bByGlobalScanFilters = ScannerConfig.bByGlobalScanFilters || bIsFileCheck;
 		ScannerConfig.GlobalScanFilters.Assets.Append(InAssets);

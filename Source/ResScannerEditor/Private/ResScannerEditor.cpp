@@ -10,6 +10,7 @@
 #include "EditorModeRegistry.h"
 #include "SResScanner.h"
 #include "DetailCustomization/CustomPropertyMatchMappingDetails.h"
+#include "SVersionUpdater/VersionUpdaterStyle.h"
 
 static const FName ResScannerTabName("ResScanner");
 
@@ -26,7 +27,7 @@ void FResScannerEditorModule::StartupModule()
 	FResScannerStyle::Initialize();
 	FResScannerStyle::ReloadTextures();
 	FResScannerCommands::Register();
-
+	
 	{
 		FPropertyEditorModule& PropertyEditorModule = FModuleManager::GetModuleChecked<FPropertyEditorModule>("PropertyEditor");
 		PropertyEditorModule.RegisterCustomPropertyTypeLayout("PropertyMatchMapping", FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FCustomPropertyMatchMappingDetails::MakeInstance));

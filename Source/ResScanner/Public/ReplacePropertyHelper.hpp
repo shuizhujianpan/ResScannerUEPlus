@@ -89,4 +89,37 @@ namespace ReplacePropertyHelper
 		}
 		return ChildValues;
 	};
+
+	static TArray<FString> ParserParserFiltersByCommandline(const FString& Commandline,const FString& Token)
+	{
+		TArray<FString> result;
+		TMap<FString, FString> KeyValues = GetCommandLineParamsMap(Commandline);
+		if(KeyValues.Find(Token))
+		{
+			FString AddPakListInfo = *KeyValues.Find(Token);
+			AddPakListInfo.ParseIntoArray(result,TEXT(","));
+		}
+		return result;
+	}
+
+	static TArray<FDirectoryPath> ParserFilters(const FString& Commandline,const FString& FilterName)
+	{
+		TArray<FDirectoryPath> Result;
+		for(auto& FilterPath:ParserParserFiltersByCommandline(Commandline,FilterName))
+		{
+			FDirectoryPath Path;
+			Path.Path = FilterPath;
+			Result.Add(Path);
+		}
+		return Result;
+	}
+	static TArray<FSoftObjectPath> ParserAssets(const FString& Commandline,const FString& FilterName)
+	{
+		TArray<FSoftObjectPath> Result;
+		for(auto& FilterPath:ParserParserFiltersByCommandline(Commandline,FString::Printf(TEXT("Add%s"),*FilterName)))
+		{
+			Result.Emplace(FilterPath);
+		}
+		return Result;
+	}
 }

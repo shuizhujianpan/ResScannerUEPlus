@@ -47,7 +47,8 @@ public class ResScannerEditor : ModuleRules
 				"SlateCore",
 				"UnrealEd",
 				"EditorStyle",
-				"InputCore"
+				"InputCore",
+				"HTTP"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
@@ -59,5 +60,11 @@ public class ResScannerEditor : ModuleRules
 				// ... add any modules that your module loads dynamically here ...
 			}
 			);
+		PublicDefinitions.AddRange(new string[]
+		{
+			"TOOL_NAME=\"ResScannerUE\"",
+			"CURRENT_VERSION_ID=24",
+			"REMOTE_VERSION_FILE=\"https://imzlp.com/opensource/version.json\""
+		});
 	}
 }

@@ -21,5 +21,7 @@ public:
 	* @param	InArgs			A declaration from which to construct the widget
 	*/
 	void Construct(const FArguments& InArgs);
+private:
+	TSharedPtr<class SVersionUpdaterWidget> VersionUpdaterWidget;
 };
 
