@@ -1,5 +1,5 @@
 #include "SResScanner.h"
-#include "SVersionUpdaterWidget.h"
+#include "SVersionUpdater/SVersionUpdaterWidget.h"
 #include "SResScannerConfigPage.h"
 // engine header
 #include "Styling/SlateTypes.h"
