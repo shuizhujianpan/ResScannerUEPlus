@@ -1,10 +1,8 @@
 // Copyright 2019 Lipeng Zha, Inc. All Rights Reserved.
 
 #include "VersionUpdaterStyle.h"
-#include "ResScannerEditor.h"
 #include "Framework/Application/SlateApplication.h"
 #include "Styling/SlateStyleRegistry.h"
-#include "Slate/SlateGameResources.h"
 #include "Interfaces/IPluginManager.h"
 
 TSharedPtr< FSlateStyleSet > FVersionUpdaterStyle::StyleInstance = NULL;
@@ -37,10 +35,10 @@ FName FVersionUpdaterStyle::GetStyleSetName()
 #define TTF_FONT( RelativePath, ... ) FSlateFontInfo( Style->RootToContentDir( RelativePath, TEXT(".ttf") ), __VA_ARGS__ )
 #define OTF_FONT( RelativePath, ... ) FSlateFontInfo( Style->RootToContentDir( RelativePath, TEXT(".otf") ), __VA_ARGS__ )
 
-const FVector2D Icon12x12(12.0f, 12.0f);
-const FVector2D Icon16x16(16.0f, 16.0f);
-const FVector2D Icon20x20(20.0f, 20.0f);
-const FVector2D Icon40x40(40.0f, 40.0f);
+const FVector2D Updater_Icon12x12(12.0f, 12.0f);
+const FVector2D Updater_Icon16x16(16.0f, 16.0f);
+const FVector2D Updater_Icon20x20(20.0f, 20.0f);
+const FVector2D Updater_Icon40x40(40.0f, 40.0f);
 
 TSharedRef< FSlateStyleSet > FVersionUpdaterStyle::Create()
 {
@@ -49,8 +47,8 @@ TSharedRef< FSlateStyleSet > FVersionUpdaterStyle::Create()
 	Style->SetCoreContentRoot(FPaths::EngineContentDir() / TEXT("Slate"));
 
 	Style->Set("Updater.GroupBorder", new BOX_BRUSH("Common/GroupBorder", FMargin(4.0f/16.0f)));
-	Style->Set("Updater.QuickLaunch", new IMAGE_BRUSH("Launcher/Launcher_Launch", Icon40x40));
-	Style->Set("Updater.Star", new IMAGE_BRUSH("Sequencer/Star", Icon12x12));
+	Style->Set("Updater.QuickLaunch", new IMAGE_BRUSH("Launcher/Launcher_Launch", Updater_Icon40x40));
+	Style->Set("Updater.Star", new IMAGE_BRUSH("Sequencer/Star", Updater_Icon12x12));
 	Style->Set("Updater.SpawnableIconOverlay", new IMAGE_BRUSH(TEXT("Sequencer/SpawnableIconOverlay"), FVector2D(13, 13)));
 
 	return Style;

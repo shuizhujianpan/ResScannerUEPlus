@@ -48,7 +48,7 @@ void SResScanner::Construct(const FArguments& InArgs)
 					.ToolName(FText::FromString(TOOL_NAME))
 					.DeveloperName(FText::FromString(TEXT("lipengzha")))
 					.DeveloperWebsite(FText::FromString(TEXT("https://imzlp.com")))
-					.UpdateWebsite(FText::FromString(TEXT("https://imzlp.com/posts/11750/")))
+					.UpdateWebsite(FText::FromString(TEXT("https://imzlp.com/posts/3635/")))
 					.CurrentVersion(CURRENT_VERSION_ID)
 				]
 				+SVerticalBox::Slot()

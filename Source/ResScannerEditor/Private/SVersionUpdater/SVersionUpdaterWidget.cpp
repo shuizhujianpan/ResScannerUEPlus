@@ -6,7 +6,6 @@
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/SBoxPanel.h"
-#include "EditorStyleSet.h"
 #include "HttpModule.h"
 #include "Misc/FileHelper.h"
 #include "Json.h"
