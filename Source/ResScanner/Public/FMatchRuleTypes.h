@@ -294,7 +294,7 @@ public:
 	TArray<FDirectoryPath> ScanFilters;
 	// 资源类型
 	UPROPERTY(EditAnywhere, BlueprintReadWrite,DisplayName="扫描资源类型",Category = "Filter")
-	UClass* ScanAssetType;
+	UClass* ScanAssetType = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite,DisplayName="递归子类类型",Category = "Filter")
 	bool RecursiveClasses = true;
 	// 命名匹配规则
