@@ -1,5 +1,6 @@
 #include "CoreMinimal.h"
 #include "TemplateHelper.hpp"
+#include "Misc/CommandLine.h"
 
 namespace ReplacePropertyHelper
 {

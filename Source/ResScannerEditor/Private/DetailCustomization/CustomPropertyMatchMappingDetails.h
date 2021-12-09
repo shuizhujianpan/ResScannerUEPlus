@@ -1,8 +1,10 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
-
+#include "IPropertyTypeCustomization.h"
 #include "IDetailCustomization.h"
+#include "CoreMinimal.h"
+#include "Widgets/Layout/SBox.h"
 
 class FCustomPropertyMatchMappingDetails : public IPropertyTypeCustomization
 {
