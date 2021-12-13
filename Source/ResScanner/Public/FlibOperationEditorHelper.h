@@ -25,7 +25,7 @@ class RESSCANNER_API UFlibOperationEditorHelper : public UBlueprintFunctionLibra
 	GENERATED_BODY()
 public:
 	UFUNCTION(BlueprintCallable,meta=(AutoCreateRefTerm="OutNumError,OutNumWarning"))
-	static void CompileBlueprint(UObject* Blueprint,int32& OutNumError,int32& OutNumWarning);
+	static bool CompileBlueprint(UObject* Blueprint,int32& OutNumError,int32& OutNumWarning);
 	UFUNCTION(BlueprintCallable)
 	static bool BlueprintHasError(UObject* Blueprint,bool bWarningAsError = false);
 };
