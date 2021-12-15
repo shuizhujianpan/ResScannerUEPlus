@@ -361,12 +361,45 @@ TArray<FSoftObjectPath> UFlibAssetParseHelper::GetAssetsByGitCommitHash(const FS
 
 void UFlibAssetParseHelper::CheckMatchedAssetsCommiter(FMatchedResult& MatchedResult, const FString& RepoDir)
 {
+	auto GetPackagePath = [](const FString& InPackageName)
+	{
+		FString AssetName;
+		{
+			int32 FoundIndex;
+			InPackageName.FindLastChar('/', FoundIndex);
+			if (FoundIndex != INDEX_NONE)
+			{
+				AssetName = UKismetStringLibrary::GetSubstring(InPackageName, FoundIndex + 1, InPackageName.Len() - FoundIndex);
+			}
+		}
+		AssetName = InPackageName + TEXT(".") + AssetName;
+		return AssetName;
+	};
 	for(auto& MatchedInfo:MatchedResult.MatchedAssets)
 	{
 		for(const auto& AssetPackageName:MatchedInfo.AssetPackageNames)
 		{
 			FString RealFile;
-			FPackageName::TryConvertLongPackageNameToFilename(AssetPackageName,RealFile,FPackageName::GetAssetPackageExtension());
+			FSoftObjectPath AssetObjectPaht = GetPackagePath(AssetPackageName);
+			
+			UPackage* Package = FindPackage(NULL, *AssetObjectPaht.GetAssetPathString());
+			if (Package)
+			{
+				Package->FullyLoad();
+			}
+			else
+			{
+				Package = LoadPackage(NULL, *AssetObjectPaht.GetAssetPathString(), LOAD_None);
+			}
+			if(!Package)
+			{
+				continue;
+			}
+			
+			const FString* PackageExtension = Package->ContainsMap() ? &FPackageName::GetMapPackageExtension() : &FPackageName::GetAssetPackageExtension();
+			
+			FPackageName::TryConvertLongPackageNameToFilename(AssetPackageName,RealFile,*PackageExtension);
+			
 			RealFile = FPaths::ConvertRelativePathToFull(RealFile);
 			if(!RealFile.IsEmpty())
 			{
