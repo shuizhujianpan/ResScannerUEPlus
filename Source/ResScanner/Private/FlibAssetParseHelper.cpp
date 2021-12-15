@@ -381,22 +381,23 @@ void UFlibAssetParseHelper::CheckMatchedAssetsCommiter(FMatchedResult& MatchedRe
 		{
 			FString RealFile;
 			FSoftObjectPath AssetObjectPaht = GetPackagePath(AssetPackageName);
-			
-			UPackage* Package = FindPackage(NULL, *AssetObjectPaht.GetAssetPathString());
-			if (Package)
+
+			FString PackageExtension = FPackageName::GetAssetPackageExtension();
 			{
-				Package->FullyLoad();
+				UPackage* Package = FindPackage(NULL, *AssetObjectPaht.GetAssetPathString());
+				if (Package)
+				{
+					Package->FullyLoad();
+				}
+				else
+				{
+					Package = LoadPackage(NULL, *AssetObjectPaht.GetAssetPathString(), LOAD_None);
+				}
+				if(Package)
+				{
+					PackageExtension = Package->ContainsMap() ? FPackageName::GetMapPackageExtension() : FPackageName::GetAssetPackageExtension();
+				}
 			}
-			else
-			{
-				Package = LoadPackage(NULL, *AssetObjectPaht.GetAssetPathString(), LOAD_None);
-			}
-			if(!Package)
-			{
-				continue;
-			}
-			
-			const FString* PackageExtension = Package->ContainsMap() ? &FPackageName::GetMapPackageExtension() : &FPackageName::GetAssetPackageExtension();
 			
 			FPackageName::TryConvertLongPackageNameToFilename(AssetPackageName,RealFile,*PackageExtension);
 			
