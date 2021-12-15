@@ -403,6 +403,8 @@ public:
 	FDirectoryPath SavePath;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="独立运行模式",Category="Advanced")
 	bool bStandaloneMode = true;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="独立运行模式",Category="Advanced")
+	bool bNoShaderCompile = true;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Advanced")
 	FString AdditionalExecCommand;
 
