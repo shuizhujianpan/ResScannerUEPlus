@@ -43,7 +43,7 @@ struct FTextRule
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="规则文本")
 	FString RuleText;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="反转规则结果")
-	bool bReverseCheck;
+	bool bReverseCheck = false;
 };
 
 USTRUCT(BlueprintType)
@@ -52,10 +52,10 @@ struct FNameRule
 	GENERATED_USTRUCT_BODY()
 public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="命名匹配模式")
-	ENameMatchMode MatchMode;
+	ENameMatchMode MatchMode = ENameMatchMode::Wildcard;
 	// 匹配规则，是必须的还是可选的，Necessary是必须匹配所有的规则，Optional则只需要匹配规则中的一个
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="匹配逻辑")
-	EMatchLogic MatchLogic;
+	EMatchLogic MatchLogic = EMatchLogic::Necessary;
 	// UPROPERTY(EditAnywhere,BlueprintReadWrite,meta=(EditCondition="MatchLogic == EMatchLogic::Optional"))
 	int32 OptionalRuleMatchNum = 1;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="路径匹配规则列表")
@@ -70,7 +70,7 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="命名匹配规则")
 	TArray<FNameRule> Rules;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="反转结果")
-	bool bReverseCheck;
+	bool bReverseCheck = false;
 };
 
 USTRUCT(BlueprintType)
@@ -79,10 +79,10 @@ struct FPathRule
 	GENERATED_USTRUCT_BODY()
 public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="路径匹配模式")
-	EPathMatchMode MatchMode;
+	EPathMatchMode MatchMode = EPathMatchMode::Wildcard;
 	// 匹配规则，是必须的还是可选的，Necessary是必须匹配所有的规则，Optional则只需要匹配规则中的一个
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="匹配逻辑")
-	EMatchLogic MatchLogic;
+	EMatchLogic MatchLogic = EMatchLogic::Necessary;
 	// UPROPERTY(EditAnywhere,BlueprintReadWrite,meta=(EditCondition="MatchLogic == EMatchLogic::Optional"))
 	int32 OptionalRuleMatchNum = 1;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="规则列表",meta = (RelativeToGameContentDir, LongPackageName))
@@ -98,7 +98,7 @@ public:
 	TArray<FPathRule> Rules;
 	
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="反转结果")
-	bool bReverseCheck;
+	bool bReverseCheck = false;
 
 };
 
@@ -128,7 +128,7 @@ struct FPropertyMatchMapping
 	GENERATED_USTRUCT_BODY()
 public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="匹配模式")
-	EPropertyMatchRule MatchRule;
+	EPropertyMatchRule MatchRule = EPropertyMatchRule::Equal;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="属性名")
 	FString PropertyName;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="值")
@@ -142,7 +142,7 @@ struct FPropertyRule
 public:
 	// 匹配规则，是必须的还是可选的，Necessary是必须匹配所有的规则，Optional则只需要匹配规则中的一个
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="匹配逻辑")
-	EMatchLogic MatchLogic;
+	EMatchLogic MatchLogic =EMatchLogic::Necessary;
 	// UPROPERTY(EditAnywhere,BlueprintReadWrite,meta=(EditCondition="MatchLogic == EMatchLogic::Optional"))
 	int32 OptionalRuleMatchNum = 1;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="属性规则列表")
@@ -157,7 +157,7 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="属性匹配规则列表")
 	TArray<FPropertyRule> MatchRules;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,DisplayName="反转结果")
-    bool bReverseCheck;
+    bool bReverseCheck = false;
 };
 
 USTRUCT(BlueprintType)

@@ -23,11 +23,11 @@ struct GITSOURCECONTROLEX_API FGitSourceControlRevisionData
 
 	/** The numeric value of the short SHA1 (8 first hex char out of 40) */
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
-	int32 CommitIdNumber;
+	int32 CommitIdNumber = -1;
 
 	/** The index of the revision in the history (SBlueprintRevisionMenu assumes order for the "Depot" label) */
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
-	int32 RevisionNumber;
+	int32 RevisionNumber = -1;
 
 	/** The SHA1 identifier of the file at this revision */
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
@@ -55,5 +55,5 @@ struct GITSOURCECONTROLEX_API FGitSourceControlRevisionData
 
 	/** The size of the file at this revision */
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
-	int32 FileSize;
+	int32 FileSize = -1;
 };
