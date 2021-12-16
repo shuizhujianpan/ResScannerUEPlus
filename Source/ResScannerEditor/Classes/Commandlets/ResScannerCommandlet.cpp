@@ -85,7 +85,8 @@ int32 UResScannerCommandlet::Main(const FString& Params)
 		InAssets = GetCommitFileListObjects(FPaths::ConvertRelativePathToFull(FPaths::ProjectContentDir()),CommitFileList);
 	}
 
-
+	PRIVATE_GAllowCommandletRendering = true;
+	
 	if(IsRunningCommandlet())
 	{
 		FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));

@@ -13,8 +13,9 @@ bool URule_CheckBlueprintError::Match_Implementation(UObject* Object, const FStr
 	return UFlibOperationEditorHelper::BlueprintHasError(Object,false);
 }
 
-void UFlibOperationEditorHelper::CompileBlueprint(UObject* Blueprint, int32& OutNumError, int32& OutNumWarning)
+bool UFlibOperationEditorHelper::CompileBlueprint(UObject* Blueprint, int32& OutNumError, int32& OutNumWarning)
 {
+	bool bBlueprintHasError = false;
 #if WITH_EDITOR
 	if(Blueprint)
 	{
@@ -35,9 +36,15 @@ void UFlibOperationEditorHelper::CompileBlueprint(UObject* Blueprint, int32& Out
 		LogResults.EndEvent();
 		OutNumError = LogResults.NumErrors;
 		OutNumWarning = LogResults.NumWarnings;
+		
+		if(BlueprintIns->Status == EBlueprintStatus::BS_Error)
+		{
+			bBlueprintHasError = true;
+		}
 	}
 
 #endif
+	return bBlueprintHasError;
 }
 
 bool UFlibOperationEditorHelper::BlueprintHasError(UObject* Blueprint,bool bWarningAsError)
@@ -45,8 +52,8 @@ bool UFlibOperationEditorHelper::BlueprintHasError(UObject* Blueprint,bool bWarn
 	int32 OutNumError = 0;
 	int32 OutNumWarning = 0;
 	
-	UFlibOperationEditorHelper::CompileBlueprint(Blueprint,OutNumError,OutNumWarning);
-
-	bool bHasError = bWarningAsError ? (OutNumError > 0 || OutNumWarning > 0) : (OutNumError > 0);
-	return bHasError;
+	bool bHasError = UFlibOperationEditorHelper::CompileBlueprint(Blueprint,OutNumError,OutNumWarning);
+	
+	bool bRetHasError = bWarningAsError ? (bHasError || OutNumWarning > 0) : bHasError;
+	return bRetHasError;
 }
