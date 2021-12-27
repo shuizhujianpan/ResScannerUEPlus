@@ -66,6 +66,7 @@ public:
 	{
 		return mThreadStatus;
 	}
+	FORCEINLINE FString GetThreadName()const {return mThreadName;}
 public:
 	FThreadWorkerStatusDelegate CancelDelegate;
 protected:
