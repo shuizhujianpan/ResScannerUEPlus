@@ -64,6 +64,7 @@ void UResScannerProxy::ScanSingleRule(const TArray<FAssetData>& GlobalAssets,con
 	FinalIgnoreFilters.Add(GetScannerConfig()->GlobalIgnoreFilters);
 	
 	FinalIgnoreFilters.Add(ScannerRule.IgnoreFilters);
+	
 	for(const auto& Asset:FilterAssets)
 	{
 		if(!UFlibAssetParseHelper::IsIgnoreAsset(Asset,FinalIgnoreFilters))
@@ -82,6 +83,7 @@ void UResScannerProxy::ScanSingleRule(const TArray<FAssetData>& GlobalAssets,con
 				RuleMatchedInfo.Assets.AddUnique(Asset);
 				RuleMatchedInfo.AssetPackageNames.AddUnique(Asset.PackageName.ToString());
 			}
+			UE_LOG(LogResScannerProxy,Display,TEXT("\t%s match status is %s!"),*Asset.GetFullName(),bMatchAllRules ? TEXT("TRUE"):TEXT("FALSE"));
 		}
 	}
 	if(!!RuleMatchedInfo.Assets.Num())
