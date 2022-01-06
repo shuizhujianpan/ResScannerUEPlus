@@ -201,7 +201,7 @@ void SResScannerConfigPage::DoScanWork()const
 		FString CurrentConfig;
 		TemplateHelper::TSerializeStructAsJsonString(*ScannerConfig,CurrentConfig);
 		FString SaveConfigTo = FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectSavedDir(),TEXT("ResScanner"),TEXT("ScannerConfig.json")));
-		FString NoShaderCompile = ScannerConfig->bNoShaderCompile ? TEXT("-NoShaderCompile") : TEXT("");
+		FString NoShaderCompile = ScannerConfig->bNoShaderCompile ? TEXT("-NoShaderCompile -nullrhi") : TEXT("");
 		FFileHelper::SaveStringToFile(CurrentConfig,*SaveConfigTo,FFileHelper::EEncodingOptions::ForceUTF8);
 		FString MissionCommand = FString::Printf(TEXT("\"%s\" -run=ResScanner -config=\"%s\" %s %s"),*UFlibResScannerEditorHelper::GetProjectFilePath(),*SaveConfigTo,*ScannerConfig->AdditionalExecCommand,*NoShaderCompile);
 		UE_LOG(LogTemp,Log,TEXT("ResScanner %s Mission: %s %s"),*ScannerConfig->ConfigName,*UFlibResScannerEditorHelper::GetUECmdBinary(),*MissionCommand);
