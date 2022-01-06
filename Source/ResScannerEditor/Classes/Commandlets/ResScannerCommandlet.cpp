@@ -100,7 +100,7 @@ int32 UResScannerCommandlet::Main(const FString& Params)
 	int iProcessResult = 0;
 	if (FFileHelper::LoadFileToString(JsonContent, *config_path))
 	{
-		UE_LOG(LogResScannerCommandlet, Display, TEXT("%s"), *JsonContent);
+		
 		FScannerConfig ScannerConfig;
 		TemplateHelper::TDeserializeJsonStringAsStruct(JsonContent,ScannerConfig);
 		ReplacePropertyHelper::ReplaceProperty(ScannerConfig,TokenValues);

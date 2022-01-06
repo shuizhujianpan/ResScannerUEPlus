@@ -99,19 +99,35 @@ void UResScannerProxy::ScanSingleRule(const TArray<FAssetData>& GlobalAssets,con
 
 void UResScannerProxy::DoScan()
 {
+	FString ScanConfigContent;
+	TemplateHelper::TSerializeStructAsJsonString(*GetScannerConfig(),ScanConfigContent);
+	UE_LOG(LogResScannerProxy, Display, TEXT("%s"), *ScanConfigContent);
+	
 	MatchedResult.MatchedAssets.Empty();
 	TArray<FAssetData> GlobalAssets;
 	if(GetScannerConfig()->bByGlobalScanFilters)
 	{
 		 GlobalAssets = UFlibAssetParseHelper::GetAssetsByObjectPath(GetScannerConfig()->GlobalScanFilters.Assets);
 		 GlobalAssets.Append(UFlibAssetParseHelper::GetAssetsByFiltersByClass(TArray<UClass*>{},GetScannerConfig()->GlobalScanFilters.Filters, true));
+		
+		UE_LOG(LogResScannerProxy,Display,TEXT("assets by global config"));
+		for(const auto& Asset:GlobalAssets)
+		{
+			UE_LOG(LogResScannerProxy,Display,TEXT("\t%s"),*Asset.AssetName.ToString());
+		}
 	}
 	if(GetScannerConfig()->GitChecker.bGitCheck)
 	{
 		FString OutRepoDir;
 		if(UFlibSourceControlHelper::FindRootDirectory(GetScannerConfig()->GitChecker.GetRepoDir(),OutRepoDir))
 		{
-			GlobalAssets.Append(UFlibAssetParseHelper::GetAssetsByObjectPath(UFlibAssetParseHelper::GetAssetsByGitChecker(GetScannerConfig()->GitChecker)));
+			TArray<FSoftObjectPath> ObjectPaths = UFlibAssetParseHelper::GetAssetsByGitChecker(GetScannerConfig()->GitChecker);
+			GlobalAssets.Append(UFlibAssetParseHelper::GetAssetsByObjectPath(ObjectPaths));
+			UE_LOG(LogResScannerProxy,Display,TEXT("assets by git repo %s:"),*OutRepoDir);
+			for(const auto& ObjectPath:ObjectPaths)
+			{
+				UE_LOG(LogResScannerProxy,Display,TEXT("\t%s"),*ObjectPath.GetLongPackageName());
+			}
 		}
 		else
 		{
